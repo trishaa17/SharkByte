@@ -1,34 +1,75 @@
 'use client';
 
 import { useState } from 'react';
-import { auth, signInWithEmailAndPassword } from '../../lib/firebase'; // Adjust the path to firebase.ts
-import { useRouter } from 'next/navigation'; // Next.js router for redirect
+import { auth, createUserWithEmailAndPassword } from '../../lib/firebase'; // Adjust path to firebase.ts
+import { useRouter } from 'next/navigation'; // Next.js router for redirection
+import { getFirestore, doc, setDoc } from 'firebase/firestore'; // Import Firestore
 
-export default function HomePage() {
-  const [userType, setUserType] = useState<'student' | 'staff' | null>(null);
+export default function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [userType, setUserType] = useState<'student' | 'staff' | null>(null); // Added userType state
   const [error, setError] = useState('');
-  const router = useRouter(); // Router for redirection after login
+  const [success, setSuccess] = useState(''); // Added success state
+  const router = useRouter(); // Router for redirection after sign-up
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (userType && email && password) {
-      try {
-        // Sign in with Firebase
-        await signInWithEmailAndPassword(auth, email, password);
-        
-        // On successful login, redirect user based on userType
-        if (userType === 'student') {
-          router.push('/student-dashboard'); // Example path for students
-        } else if (userType === 'staff') {
-          router.push('/staff-dashboard'); // Example path for staff
-        }
-      } catch (error) {
-        setError('Invalid email or password. Please try again.');
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    // Check if userType is selected
+    if (!userType) {
+      setError('Please select a user type (Student or Staff)');
+      return;
+    }
+
+    // Check if password length is less than 6 characters
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    // Check if email format is valid using regex
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      // Sign up with Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Get the Firestore instance
+      const db = getFirestore();
+
+      // Create a new user document in Firestore
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        email: userCredential.user.email,
+        userType: userType, // Save the userType
+      });
+
+      // Show success message
+      setError(''); // Clear error message
+
+      setSuccess('Sign-up successful! Redirecting to login...');
+
+      // Redirect to login page after 2 seconds
+      setTimeout(() => {
+        router.push('/login'); // Redirect to login page
+      }, 2000);
+    } catch (error:any) {
+      if (error.code === 'auth/email-already-in-use') {
+        setError('An account with this email address already exists. Please log in or use a different email.');
+      } else {
+        setError('Error signing up. Please try again.');
       }
-    } else {
-      setError('Please fill out all fields.');
     }
   };
 
@@ -45,10 +86,10 @@ export default function HomePage() {
           color: 'white',
         }}
       >
-        <h2>Welcome to Campus Cart</h2>
+        <h2>Sign Up for Campus Cart</h2>
       </div>
 
-      {/* Right side (white background and login form) */}
+      {/* Right side (white background and sign-up form) */}
       <div
         style={{
           flex: 1,
@@ -56,7 +97,7 @@ export default function HomePage() {
           justifyContent: 'center',
           alignItems: 'center',
           padding: '20px',
-          backgroundColor: 'white', // Set white background here
+          backgroundColor: 'white',
         }}
       >
         <div style={{ width: '100%', maxWidth: '400px' }}>
@@ -67,9 +108,13 @@ export default function HomePage() {
           {/* Error message */}
           {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
 
+          {/* Success message */}
+          {success && <p style={{ color: 'green', textAlign: 'center' }}>{success}</p>}
+
           <form onSubmit={handleSubmit}>
+
             {/* Student or Staff selection */}
-            <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+            <div style={{ marginBottom: '20px', marginTop: '30px', textAlign: 'center' }}>
               <label style={{ color: 'black', fontSize: '16px' }}>
                 <input
                   type="radio"
@@ -142,14 +187,31 @@ export default function HomePage() {
               />
             </div>
 
-            {/* Forgot Password */}
-            <div style={{ textAlign: 'right', marginBottom: '40px' }}>
-              <a href="#" style={{ fontSize: '12px', color: 'black' }}>
-                Forgot Password?
-              </a>
+            {/* Confirm Password Input */}
+            <div style={{ marginBottom: '50px' }}>
+              <label htmlFor="confirmPassword" style={{ color: 'black', fontSize: '14px' }}>
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
+                required
+                style={{
+                  width: '100%',
+                  padding: '5px',
+                  border: 'none',
+                  borderBottom: '2px solid gray',
+                  marginTop: '5px',
+                  fontSize: '14px',
+                  color: 'black',
+                }}
+              />
             </div>
 
-            {/* Login Button */}
+            {/* Sign Up Button */}
             <div style={{ textAlign: 'center' }}>
               <button
                 type="submit"
@@ -164,17 +226,17 @@ export default function HomePage() {
                   cursor: 'pointer',
                 }}
               >
-                Log In
+                Sign Up
               </button>
             </div>
           </form>
 
-          {/* Sign Up Link */}
+          {/* Redirect to Login Link */}
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
             <p style={{ fontSize: '14px', color: 'black'}}>
-              Don't have an account?{' '}
-              <a href="/signup" style={{ textDecoration: 'underline'}}>
-                Sign up here.
+              Already have an account?{' '}
+              <a href="/login" style={{ textDecoration: 'underline'}}>
+                Log in here.
               </a>
             </p>
           </div>
