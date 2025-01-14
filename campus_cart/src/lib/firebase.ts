@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth'; // Import auth functions
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail} from 'firebase/auth'; // Import auth functions
 import { getFirestore, doc, setDoc } from 'firebase/firestore'; // Import Firestore functions
 import { getAnalytics } from 'firebase/analytics';
 
@@ -20,4 +20,4 @@ const auth = getAuth(app);
 const firestore = getFirestore(app);
 const analytics = getAnalytics(app);
 
-export { auth, firestore, analytics, signInWithEmailAndPassword, createUserWithEmailAndPassword, setDoc, doc };
+export { auth, firestore, analytics, signInWithEmailAndPassword, createUserWithEmailAndPassword, setDoc, doc, sendPasswordResetEmail};

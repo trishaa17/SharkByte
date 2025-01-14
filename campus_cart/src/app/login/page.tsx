@@ -5,7 +5,7 @@ import { auth, signInWithEmailAndPassword } from '../../lib/firebase'; // Adjust
 import { useRouter } from 'next/navigation'; // Next.js router for redirect
 
 export default function HomePage() {
-  const [userType, setUserType] = useState<'student' | 'staff' | null>(null);
+  const [userType, setUserType] = useState<'resident' | 'staff' | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,8 +19,8 @@ export default function HomePage() {
         await signInWithEmailAndPassword(auth, email, password);
         
         // On successful login, redirect user based on userType
-        if (userType === 'student') {
-          router.push('/student-dashboard'); // Example path for students
+        if (userType === 'resident') {
+          router.push('/resident-dashboard'); // Example path for residents
         } else if (userType === 'staff') {
           router.push('/staff-dashboard'); // Example path for staff
         }
@@ -68,18 +68,18 @@ export default function HomePage() {
           {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
 
           <form onSubmit={handleSubmit}>
-            {/* Student or Staff selection */}
+            {/* Resident or Staff selection */}
             <div style={{ marginBottom: '20px', textAlign: 'center' }}>
               <label style={{ color: 'black', fontSize: '16px' }}>
                 <input
                   type="radio"
                   name="userType"
-                  value="student"
-                  checked={userType === 'student'}
-                  onChange={() => setUserType('student')}
+                  value="resident"
+                  checked={userType === 'resident'}
+                  onChange={() => setUserType('resident')}
                   style={{ marginRight: '10px' }}
                 />
-                Student
+                Resident
               </label>
               <label style={{ marginLeft: '20px', color: 'black', fontSize: '16px' }}>
                 <input
@@ -144,7 +144,7 @@ export default function HomePage() {
 
             {/* Forgot Password */}
             <div style={{ textAlign: 'right', marginBottom: '40px' }}>
-              <a href="#" style={{ fontSize: '12px', color: 'black' }}>
+              <a href="/forgetpassword" style={{ fontSize: '12px', color: 'black' }}>
                 Forgot Password?
               </a>
             </div>

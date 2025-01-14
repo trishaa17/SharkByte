@@ -9,7 +9,7 @@ export default function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [userType, setUserType] = useState<'student' | 'staff' | null>(null); // Added userType state
+  const [userType, setUserType] = useState<'resident' | 'staff' | null>(null); // Added userType state
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(''); // Added success state
   const router = useRouter(); // Router for redirection after sign-up
@@ -25,7 +25,7 @@ export default function SignUpPage() {
 
     // Check if userType is selected
     if (!userType) {
-      setError('Please select a user type (Student or Staff)');
+      setError('Please select a user type (Resident or Staff)');
       return;
     }
 
@@ -113,18 +113,18 @@ export default function SignUpPage() {
 
           <form onSubmit={handleSubmit}>
 
-            {/* Student or Staff selection */}
+            {/* Resident or Staff selection */}
             <div style={{ marginBottom: '20px', marginTop: '30px', textAlign: 'center' }}>
               <label style={{ color: 'black', fontSize: '16px' }}>
                 <input
                   type="radio"
                   name="userType"
-                  value="student"
-                  checked={userType === 'student'}
-                  onChange={() => setUserType('student')}
+                  value="resident"
+                  checked={userType === 'resident'}
+                  onChange={() => setUserType('resident')}
                   style={{ marginRight: '10px' }}
                 />
-                Student
+                Resident
               </label>
               <label style={{ marginLeft: '20px', color: 'black', fontSize: '16px' }}>
                 <input
