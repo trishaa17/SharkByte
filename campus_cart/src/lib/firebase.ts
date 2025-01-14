@@ -4,13 +4,13 @@ import { getFirestore, doc, setDoc } from 'firebase/firestore'; // Import Firest
 import { getAnalytics } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyDh8lfaKhWBeCBG_Zya2H88k6ZGFaDqycg",
+  authDomain: "campuscart-94eea.firebaseapp.com",
+  projectId: "campuscart-94eea",
+  storageBucket: "campuscart-94eea.firebasestorage.app",
+  messagingSenderId: "277210928267",
+  appId: "1:277210928267:web:8c5756ea7cc9107995308e",
+  measurementId:"G-6M8ZY84579"
 };
 
 const app = initializeApp(firebaseConfig);
