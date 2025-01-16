@@ -1,0 +1,174 @@
+/* Search and Tabs Container */
+.search-tabs-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.tab {
+  padding: 10px 20px;
+  background-color: white;
+  border: none;
+  border-bottom: 2px solid #ccc;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.tab:hover,
+.tab:focus {
+  border-color: #30368a;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  padding: 5px;
+  font-size: 14px;
+  color: black;
+  border: 1px solid #686db0;
+  border-radius: 5px;
+  width: 200px;
+}
+
+/* Date Filters */
+.date-filters {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.date-input {
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #686db0;
+  border-radius: 5px;
+  margin: 0 5px;
+  width: 150px;
+}
+
+.date-filters span {
+  margin: 0 5px;
+}
+
+/* Container */
+.product-requests-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: white;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* Title */
+.page-title {
+  text-align: left;
+  width: 100%;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #30368a;
+}
+
+/* Table */
+.requests-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.requests-table th,
+.requests-table td {
+  text-align: center;
+  padding: 10px;
+}
+
+.requests-table th {
+  background-color: #f0f0f0;
+}
+
+.requests-table tr {
+  border-bottom: 1px solid #ddd;
+}
+
+/* Image Styling */
+.requests-table img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+}
+
+/* Status Labels */
+.status-label {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  color: white;
+}
+
+.status-label.completed {
+  background-color: #28a745; /* Green */
+}
+
+.status-label.pending {
+  background-color: #ff9800; /* Orange */
+}
+
+/* Action Buttons */
+.action-button {
+  background-color: #66ba69; /* Lighter Green */
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.action-button.red {
+  background-color: #e36e65; /* Lighter Red */
+}
+
+.stacked-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-button:hover {
+  opacity: 0.8;
+}
+
+/* Action Button Hover */
+.action-button:hover {
+  opacity: 0.8;
+}
+
+.action-button.red:hover {
+  opacity: 0.8;
+}
+
+/* Action Buttons */
+.complete-button {
+  background-color: #6a71cd; 
+  color: white;
+  border: 2px solid #6a71cd; /* Blue border */
+  padding: 5px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.complete-button:hover {
+  background-color: #30368A  ; 
+  opacity: 0.9;
+}
+
