@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { auth, reauthenticateUser, updateUserPassword } from '../../lib/firebase'; // Updated import from firebase.ts
+import { auth, reauthenticateUser, updateUserPassword } from '../../../lib/firebase'; // Updated import from firebase.ts
 import { useRouter } from 'next/navigation'; // Next.js router for redirection
 
 export default function ChangePasswordPage() {
@@ -19,7 +19,7 @@ export default function ChangePasswordPage() {
     if (user) {
       setUserEmail(user.email);
     } else {
-      setUserEmail('No user');
+      setUserEmail(null);
     }
   }, []); // Run once on mount to check user status
 
@@ -84,8 +84,8 @@ export default function ChangePasswordPage() {
           backgroundColor: 'white',
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'center',
-          padding: '20px',
+          alignItems: 'flex-start',  // Align to the top
+          padding: '60px 20px',  // Adjusted padding to move content higher
         }}
       >
         <div style={{ width: '100%', maxWidth: '400px' }}>
@@ -102,7 +102,7 @@ export default function ChangePasswordPage() {
           <form onSubmit={handleSubmit}>
             {/* Current Password Input */}
             <div style={{ marginBottom: '20px' }}>
-              <label htmlFor="currentPassword" style={{ color: 'black', fontSize: '14px' }}>
+              <label htmlFor="currentPassword" style={{ color: 'black', fontSize: '14px'}}>
                 Current Password
               </label>
               <input
@@ -179,7 +179,7 @@ export default function ChangePasswordPage() {
                 style={{
                   width: '100%',
                   padding: '15px',
-                  backgroundColor: '#006400',
+                  backgroundColor: '#30368A',
                   borderRadius: '25px',
                   color: 'white',
                   fontSize: '16px',

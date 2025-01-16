@@ -22,7 +22,7 @@ export default function HomePage() {
         if (userType === 'resident') {
           router.push('/resident-dashboard'); // Example path for residents
         } else if (userType === 'staff') {
-          router.push('/admin/inventory'); 
+          router.push('/staff/inventory'); 
         }
       } catch (error) {
         setError('Invalid email or password. Please try again.');
