@@ -165,6 +165,7 @@ const styles = {
     width: '100%',
     borderCollapse: 'collapse',
     marginTop: '20px',
+    textAlign: 'center',
   },
   actionButton: {
     margin: '5px',
