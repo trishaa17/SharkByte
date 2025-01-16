@@ -31,7 +31,10 @@ export default function HomePage() {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          const userRole = userData.role;
+          console.log("User Data:", userData);  // Log the user data to check the structure
+
+          const userRole = userData?.userType;  // Ensure role exists in the user data
+          console.log("User Role:", userRole); // Check the role value
 
           // Check if userRole matches the selected userType
           if (userRole === userType) {
@@ -48,6 +51,7 @@ export default function HomePage() {
           setError('User data not found. Please contact support.');
         }
       } catch (error) {
+        console.error(error);  // Log the error to check what happened
         setError('Invalid email or password. Please try again.');
       }
     } else {
