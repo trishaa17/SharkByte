@@ -79,7 +79,7 @@ export default function SignUpPage() {
       <div
         style={{
           flex: 1,
-          backgroundColor: '#006400',
+          backgroundColor: '#30368A',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
