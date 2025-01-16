@@ -3,16 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { firestore } from '../../../lib/firebase'; // Import firebase functions
 import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth'; // Import the password reset function
 import AddUserModal from './signup-popup'; // Import the AddUserModal
-import ChangePasswordModal from './changepassword-popup'; // Import the ChangePasswordModal
 
 const ManageUsers: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]); // State to store the list of users
   const [search, setSearch] = useState<string>(''); // Search term for user search
   const [filter, setFilter] = useState<string>(''); // Filter for staff or residents
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // State to control modal visibility
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false); // State to control password modal visibility
-  const [selectedUserId, setSelectedUserId] = useState<string>(''); // State to store selected user's ID for password change
 
   useEffect(() => {
     fetchUsers();
@@ -28,9 +26,19 @@ const ManageUsers: React.FC = () => {
       q = query(usersRef, where('role', '==', filter)); // Filter by staff/resident
     }
 
-    // Apply search if any
+    // Apply search by firstName and lastName if any
     if (search) {
-      q = query(usersRef, where('email', '>=', search), where('email', '<=', search + '\uf8ff'));
+      q = query(
+        usersRef,
+        where('firstName', '>=', search),
+        where('firstName', '<=', search + '\uf8ff')
+      );
+      // Adding search for lastName as well
+      q = query(
+        usersRef,
+        where('lastName', '>=', search),
+        where('lastName', '<=', search + '\uf8ff')
+      );
     }
 
     const querySnapshot = await getDocs(q);
@@ -57,10 +65,16 @@ const ManageUsers: React.FC = () => {
     fetchUsers(); // Refresh the users list
   };
 
-  // Handle password update
-  const handleUpdatePassword = (userId: string) => {
-    setSelectedUserId(userId); // Set the user ID for the selected user
-    setIsPasswordModalOpen(true); // Open the change password modal
+  // Handle password reset
+  const handlePasswordReset = async (email: string) => {
+    try {
+      const auth = getAuth(); // Get the Firebase auth instance
+      await sendPasswordResetEmail(auth, email); // Send password reset email
+      alert('Password reset email sent!'); // Notify the admin or user
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
+      alert('Failed to send password reset email. Please try again later.');
+    }
   };
 
   // Handle add new user
@@ -71,11 +85,6 @@ const ManageUsers: React.FC = () => {
   // Handle modal close
   const handleCloseModal = () => {
     setIsModalOpen(false); // Close the add user modal
-  };
-
-  // Handle password modal close
-  const handleClosePasswordModal = () => {
-    setIsPasswordModalOpen(false); // Close the change password modal
   };
 
   return (
@@ -92,17 +101,17 @@ const ManageUsers: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <input
             type="text"
-            placeholder="Search by Email"
+            placeholder="Search by Name"
             value={search}
             onChange={handleSearchChange}
             style={{
               padding: '8px 12px',
-              border: '1px solid grey',  // Grey border
-              borderRadius: '10px',  // Rounded corners
+              border: '1px solid grey',
+              borderRadius: '10px',
               marginRight: '10px',
               fontSize: '14px',
-              height: '40px',   // Same height for consistency
-              width: '200px',   // Adjust width if needed
+              height: '40px',
+              width: '200px',
             }}
           />
           <select
@@ -110,12 +119,12 @@ const ManageUsers: React.FC = () => {
             value={filter}
             style={{
               padding: '8px 12px',
-              border: '1px solid grey',  // Grey border
-              borderRadius: '10px',  // Rounded corners
+              border: '1px solid grey',
+              borderRadius: '10px',
               fontSize: '14px',
               marginRight: '10px',
-              width: '200px',  // Same width for consistency
-              height: '40px',   // Same height for consistency
+              width: '200px',
+              height: '40px',
               paddingRight: '20px',
               appearance: 'none',
               background: 'url("data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2012%2012%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20fill%3D%22%23A9A9A9%22%20d%3D%22M3%205.5L6%208.5L9%205.5%22%2F%3E%3C%2Fsvg%3E") no-repeat scroll right 10px center',
@@ -135,7 +144,7 @@ const ManageUsers: React.FC = () => {
               borderRadius: '10px',
               border: 'none',
               cursor: 'pointer',
-              height: '40px',  // Same height for consistency
+              height: '40px',
             }}
           >
             + Add User
@@ -156,13 +165,15 @@ const ManageUsers: React.FC = () => {
         <tbody>
           {users.map((user, index) => (
             <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
-              <td style={{ textAlign: 'left', padding: '8px' }}>{user.name || 'N/A'}</td>
+              <td style={{ textAlign: 'left', padding: '8px' }}>
+                {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : 'N/A'}
+              </td>
               <td style={{ textAlign: 'left', padding: '8px' }}>{user.email}</td>
               <td style={{ textAlign: 'left', padding: '8px' }}>{user.userType}</td>
               <td style={{ textAlign: 'left', padding: '8px', display: 'flex', justifyContent: 'space-between' }}>
                 {/* Change Password button */}
                 <button
-                  onClick={() => handleUpdatePassword(user.id)} // Pass the user ID from the row
+                  onClick={() => handlePasswordReset(user.email)} // Send password reset email
                   style={{
                     backgroundColor: '#D3D3D3', // Grey color for change password button
                     color: '#000',
@@ -173,7 +184,7 @@ const ManageUsers: React.FC = () => {
                     height: '40px',
                   }}
                 >
-                  Change Password
+                  Reset Password
                 </button>
 
                 {/* Rubbish Bin (Delete) Icon */}
@@ -208,13 +219,6 @@ const ManageUsers: React.FC = () => {
 
       {/* AddUserModal */}
       <AddUserModal isOpen={isModalOpen} onClose={handleCloseModal} />
-      
-      {/* ChangePasswordModal */}
-      <ChangePasswordModal
-        isOpen={isPasswordModalOpen}
-        onClose={handleClosePasswordModal}
-        userId={selectedUserId} // Pass the selected user ID for password change
-      />
     </div>
   );
 };

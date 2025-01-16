@@ -62,7 +62,7 @@ const ResidentLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
           {[
             { path: '/user/home', label: 'Home' },
             { path: '/user/credits', label: 'Vouchers' },
-            { path: '/user/pre-orders', label: 'Pre Orders' },
+            { path: '/user/preorders', label: 'Pre Orders' },
             { path: '/user/transaction_history', label: 'Transaction History' },
           ].map((link, index) => (
             <a
