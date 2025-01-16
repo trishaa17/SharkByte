@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { firestore } from "../../../lib/firebase"; // Your Firebase initialization file
+import { firestore } from "../../../lib/firebase"; 
 
 const auth = getAuth();
 const db = firestore;
@@ -123,6 +123,7 @@ const ProductHome = () => {
             <h3>{product.name}</h3>
             <p>{product.description}</p>
             <p>Price: {product.price}</p>
+            <p>Qty left: {product.quantity}</p>
 
             <div style={styles.buySection}>
               <div style={styles.quantityButtons}>
@@ -145,7 +146,7 @@ const ProductHome = () => {
                   +
                 </button>
               </div>
-              {product.stock === 0 ? (
+              {product.quantity === 0 ? (
                 <button
                   style={styles.preOrderButton}
                   onClick={() => handlePreOrder(product)}
