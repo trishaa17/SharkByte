@@ -39,25 +39,6 @@ const getAllUsers = async () => {
   return users;
 };
 
-const updatePasswordForUser = async (userId: string, newPassword: string) => {
-  try {
-    const auth = getAuth();
-    const userRef = doc(firestore, 'users', userId); // Firestore reference to the user document
-    
-    // Assuming user is authenticated as an admin, we can directly update the password
-    const user = await auth.getUser(userId); // Get user by ID
-    await updatePassword(user, newPassword); // Update password in Firebase Authentication
-    
-    // Optionally, you can update additional fields in Firestore if needed
-    await updateDoc(userRef, {
-      passwordLastUpdated: new Date(), // Example: Add a timestamp for when the password was updated
-    });
-  } catch (error) {
-    console.error('Error updating password:', error);
-    throw new Error('Failed to update password');
-  }
-};
-
 // Add User
 const addUser = async (userData: { name: string, email: string, role: string }) => {
   const newUserRef = doc(collection(firestore, 'users'));
@@ -91,6 +72,5 @@ export {
   addUser, 
   updateUserRole, 
   deleteUser,
-  updatePasswordForUser, 
   db,
 };

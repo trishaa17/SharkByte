@@ -23,7 +23,7 @@ const ManageUsers: React.FC = () => {
 
     // Apply filter if any
     if (filter) {
-      q = query(usersRef, where('role', '==', filter)); // Filter by staff/resident
+      q = query(usersRef, where('userType', '==', filter.toLowerCase())); // Convert filter to lowercase
     }
 
     // Apply search by firstName and lastName if any
