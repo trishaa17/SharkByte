@@ -12,6 +12,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [userType, setUserType] = useState<'resident' | 'staff' | null>(null);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [credits] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -44,14 +47,17 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
 
       const db = getFirestore();
       await setDoc(doc(db, 'users', userCredential.user.uid), {
+        firstName,
+        lastName,
         email: userCredential.user.email,
-        userType: userType,
+        userType,
+        credits,
       });
 
       setError('');
       setSuccess('User added successfully!');
       setTimeout(() => {
-        onClose(); // Close modal after 2 seconds
+        onClose();
       }, 2000);
     } catch (error: any) {
       setError('Error creating user. Please try again.');
@@ -80,15 +86,30 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
           padding: '40px',
           borderRadius: '10px',
           width: '400px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          position: 'relative',
         }}
       >
-        <h1 style={{ fontWeight: 'bold', fontSize: '32px', color: 'black', marginBottom: '20px' }}>Add User</h1>
+        {/* Close Icon */}
+        <img
+          src="/circle-cross.svg"
+          alt="Close"
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            height: '25px',
+            width: '25px',
+            cursor: 'pointer',
+          }}
+        />
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {success && <p style={{ color: 'green' }}>{success}</p>}
+        <h1 style={{ fontWeight: 'bold', fontSize: '32px', color: 'black', marginBottom: '20px', textAlign: 'center' }}>
+          Add User
+        </h1>
+
+        {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+        {success && <p style={{ color: 'green', textAlign: 'center' }}>{success}</p>}
 
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
           <div style={{ marginBottom: '20px', textAlign: 'center' }}>
@@ -116,6 +137,54 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
             </label>
           </div>
 
+          {/* Form Fields */}
+          <div style={{ marginBottom: '20px' }}>
+            <label htmlFor="firstName" style={{ color: 'black', fontSize: '14px' }}>
+              First Name
+            </label>
+            <input
+              type="text"
+              id="firstName"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Enter first name"
+              required
+              style={{
+                width: '100%',
+                padding: '5px',
+                border: 'none',
+                borderBottom: '2px solid gray',
+                marginTop: '5px',
+                fontSize: '14px',
+                color: 'black',
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label htmlFor="lastName" style={{ color: 'black', fontSize: '14px' }}>
+              Last Name
+            </label>
+            <input
+              type="text"
+              id="lastName"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Enter last name"
+              required
+              style={{
+                width: '100%',
+                padding: '5px',
+                border: 'none',
+                borderBottom: '2px solid gray',
+                marginTop: '5px',
+                fontSize: '14px',
+                color: 'black',
+              }}
+            />
+          </div>
+
+          {/* Email and Password */}
           <div style={{ marginBottom: '20px' }}>
             <label htmlFor="email" style={{ color: 'black', fontSize: '14px' }}>
               Email
@@ -185,7 +254,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
             />
           </div>
 
-          {/* Button container */}
+          {/* Submit Button */}
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
             <button
               type="submit"
@@ -198,25 +267,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose }) => {
                 fontSize: '16px',
                 border: 'none',
                 cursor: 'pointer',
-                marginBottom: '15px', // Space between buttons
+                marginBottom: '15px',
               }}
             >
               Add User
-            </button>
-
-            <button
-              onClick={onClose}
-              style={{
-                width: '80%',
-                padding: '15px',
-                backgroundColor: '#FF6347',
-                color: 'white',
-                border: 'none',
-                cursor: 'pointer',
-                borderRadius: '25px',
-              }}
-            >
-              Close
             </button>
           </div>
         </form>

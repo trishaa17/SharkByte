@@ -25,7 +25,6 @@ const InventoryManagement: React.FC = () => {
   const [newItemQuantity, setNewItemQuantity] = useState<number | string>('');
   const [newItemImage, setNewItemImage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -36,11 +35,9 @@ const InventoryManagement: React.FC = () => {
     setIsModalOpen(false);
   };
 
-
   const inventoryCollection = collection(firestore, 'inventory');
   const auditLogCollection = collection(firestore, 'auditLogs');
 
-  // Fetch inventory and logs on component mount
   useEffect(() => {
     const fetchInventory = async () => {
       const inventorySnapshot = await getDocs(inventoryCollection);
@@ -130,10 +127,20 @@ const InventoryManagement: React.FC = () => {
           transform: isSidebarOpen ? 'translateX(0)' : 'translateX(100%)',
         }}
       >
+        <img
+          src="/circle-cross-white.png"
+          alt="Close"
+          onClick={() => setIsSidebarOpen(false)}
+          style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            width: '20px',
+            height: '20px',
+            cursor: 'pointer',
+          }}
+        />
         <h2 style={styles.sidebarTitle}>Audit Logs</h2>
-        <button onClick={() => setIsSidebarOpen(false)} style={styles.closeButton}>
-          Close
-        </button>
         <ul style={styles.auditLogList}>
           {auditLogs.map((log, index) => (
             <li key={index} style={styles.auditLogItem}>
@@ -152,70 +159,86 @@ const InventoryManagement: React.FC = () => {
           </button>
         </div>
 
-        {/* Inventory List Section */}
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <h2 style={styles.boldTitle}>Current Inventory</h2>
           <button
             style={styles.addButtonSquare}
-            onClick={handleOpenModal} // Opens modal when clicked
+            onClick={handleOpenModal}
           >
             <h3>+</h3>
           </button>
         </div>
-          <table style={styles.table}>
-            <thead>
-              <tr>
+
+        <table style={styles.table}>
+          <thead>
+            <tr>
               <th style={styles.th}>Image</th>
               <th style={styles.th}>Item Name</th>
               <th style={styles.th}>Credits</th>
               <th style={styles.th}>Quantity</th>
               <th style={styles.th}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inventory.map((item) => (
+              <tr key={item.id} style={styles.tableRow}>
+                <td>
+                  <img src={item.image} alt={item.name} style={styles.image} />
+                </td>
+                <td style={styles.td}>{item.name}</td>
+                <td style={styles.td}>{item.price}</td>
+                <td style={styles.td}>{item.quantity}</td>
+                <td style={styles.td}>
+                  <div style={styles.actionContainer}>
+                    <input
+                      type="number"
+                      placeholder="Qty"
+                      min="1"
+                      onChange={(e) => (item.quantity = parseInt(e.target.value) || 0)}
+                      style={styles.quantityInput}
+                    />
+                    <button
+                      onClick={() => handleUpdateQuantity(item.id, item.quantity || 1)}
+                      style={styles.actionButton}
+                    >
+                      +
+                    </button>
+                    <button
+                      onClick={() => handleUpdateQuantity(item.id, -(item.quantity || 1))}
+                      style={styles.actionButton}
+                    >
+                      -
+                    </button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {inventory.map((item) => (
-                <tr key={item.id} style={styles.tableRow}>
-                  <td>
-                    <img src={item.image} alt={item.name} style={styles.image} />
-                  </td>
-                  <td style={styles.td}>{item.name}</td>
-                  <td style={styles.td}>{item.price}</td>
-                  <td style={styles.td}>{item.quantity}</td>
-                  <td style={styles.td}>
-                    <div style={styles.actionContainer}>
-                      <input
-                        type="number"
-                        placeholder="Qty"
-                        min="1"
-                        onChange={(e) => item.quantity = parseInt(e.target.value) || 0} // Temporary quantity value
-                        style={styles.quantityInput}
-                      />
-                      <button
-                        onClick={() => handleUpdateQuantity(item.id, item.quantity || 1)} // Default to 1 if no value is input
-                        style={styles.actionButton}
-                      >
-                        +
-                      </button>
-                      <button
-                        onClick={() => handleUpdateQuantity(item.id, -(item.quantity || 1))}
-                        style={styles.actionButton}
-                      >
-                        -
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       {/* Modal Popup for Add New Item */}
       {isModalOpen && (
         <>
           <div style={styles.modalOverlay} onClick={handleCloseModal}></div>
           <div style={styles.modalContainer}>
-            <h3 style={{ fontWeight: 'bold', fontSize: '32px', color: 'black', textAlign: 'center', marginBottom: '20px'}}>Add New Item</h3>
-            <label style={styles.label}> Item Name </label>
+            <img
+              src="/circle-cross.svg"
+              alt="Close"
+              onClick={handleCloseModal}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                width: '20px',
+                height: '20px',
+                cursor: 'pointer',
+              }}
+            />
+            <h3 style={{ fontWeight: 'bold', fontSize: '32px', textAlign: 'center', marginBottom: '20px' }}>
+              Add New Item
+            </h3>
+            <label style={styles.label}>Item Name</label>
             <input
               type="text"
               placeholder="Enter Item Name"
@@ -223,7 +246,7 @@ const InventoryManagement: React.FC = () => {
               onChange={(e) => setNewItemName(e.target.value)}
               style={styles.input}
             />
-            <label style={styles.label}> Credits </label>
+            <label style={styles.label}>Credits</label>
             <input
               type="text"
               placeholder="Enter Item Value"
@@ -231,7 +254,7 @@ const InventoryManagement: React.FC = () => {
               onChange={(e) => setNewItemPrice(e.target.value)}
               style={styles.input}
             />
-            <label style={styles.label}> Quantity </label>
+            <label style={styles.label}>Quantity</label>
             <input
               type="number"
               placeholder="Enter Quantity"
@@ -239,7 +262,7 @@ const InventoryManagement: React.FC = () => {
               onChange={(e) => setNewItemQuantity(e.target.value)}
               style={styles.input}
             />
-            <label style={styles.label}> Image URL </label>
+            <label style={styles.label}>Image URL</label>
             <input
               type="text"
               placeholder="Enter Image URL"
@@ -248,49 +271,34 @@ const InventoryManagement: React.FC = () => {
               style={styles.input}
             />
 
-            {/* Button container */}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' , gap: '20px'}}>
-      
-            <button onClick={() => {
-                  handleAddNewItem();
-                  handleCloseModal(); // Close the modal after adding item
-                }} 
-                style={{
-                width: '80%',
+            <button
+              onClick={() => {
+                handleAddNewItem();
+                handleCloseModal();
+              }}
+              style={{
+                width: '100%',
                 padding: '15px',
                 backgroundColor: '#555555',
-                borderRadius: '25px',
+                borderRadius: '8px',
                 color: 'white',
                 fontSize: '16px',
                 border: 'none',
                 cursor: 'pointer',
-                marginTop: '40px',
-                marginBottom: '20px', // Space between buttons
-                margin: '0 auto', /* Centers the button horizontally */
-                display: 'block',
-              }}>
+                marginTop: '20px',
+              }}
+            >
               Add Item
             </button>
-            <button onClick={handleCloseModal} style={{
-                width: '80%',
-                padding: '15px',
-                backgroundColor: '#FF6347',
-                color: 'white',
-                border: 'none',
-                cursor: 'pointer',
-                borderRadius: '25px',
-                margin: '0 auto', /* Centers the button horizontally */
-                display: 'block',
-              }}>
-              Close
-            </button>
-            </div>
           </div>
         </>
       )}
     </div>
   );
 };
+
+
+
 
 const styles = {
   container: {

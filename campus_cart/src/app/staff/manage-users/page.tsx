@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { firestore } from '../../../lib/firebase'; // Import firebase functions
-import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth'; // Import the password reset function
 import AddUserModal from './signup-popup'; // Import the AddUserModal
 
@@ -11,6 +11,10 @@ const ManageUsers: React.FC = () => {
   const [search, setSearch] = useState<string>(''); // Search term for user search
   const [filter, setFilter] = useState<string>(''); // Filter for staff or residents
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // State to control modal visibility
+  const [creditModalOpen, setCreditModalOpen] = useState<boolean>(false); // State to control credit modal visibility
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set()); // Set of selected user IDs
+  const [selectAll, setSelectAll] = useState<boolean>(false); // State for the "select all" checkbox
+  const [creditAmount, setCreditAmount] = useState<number>(0); // State to store the credit amount
 
   useEffect(() => {
     fetchUsers();
@@ -42,7 +46,7 @@ const ManageUsers: React.FC = () => {
     }
 
     const querySnapshot = await getDocs(q);
-    const usersList = querySnapshot.docs.map((doc) => doc.data());
+    const usersList = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     setUsers(usersList);
   };
 
@@ -54,15 +58,6 @@ const ManageUsers: React.FC = () => {
   // Handle filter change
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFilter(e.target.value);
-  };
-
-  // Handle user deletion
-  const handleDelete = async (userId: string) => {
-    // Delete the user from Firestore
-    const userRef = doc(firestore, 'users', userId);
-    await deleteDoc(userRef);
-    console.log(`Deleted user with ID: ${userId}`);
-    fetchUsers(); // Refresh the users list
   };
 
   // Handle password reset
@@ -85,6 +80,65 @@ const ManageUsers: React.FC = () => {
   // Handle modal close
   const handleCloseModal = () => {
     setIsModalOpen(false); // Close the add user modal
+  };
+
+  // Handle credit modal close
+  const handleCloseCreditModal = () => {
+    setCreditModalOpen(false); // Close the credit modal
+  };
+
+  // Toggle individual user checkbox selection
+  const handleUserCheckboxChange = (userId: string) => {
+    const updatedSelection = new Set(selectedUsers);
+    if (updatedSelection.has(userId)) {
+      updatedSelection.delete(userId);
+    } else {
+      updatedSelection.add(userId);
+    }
+    setSelectedUsers(updatedSelection);
+  };
+
+  // Toggle select all checkboxes
+  const handleSelectAllChange = () => {
+    if (selectAll) {
+      setSelectedUsers(new Set()); // Deselect all
+    } else {
+      const allUserIds = new Set(users.map((user) => user.id)); // Select all users
+      setSelectedUsers(allUserIds);
+    }
+    setSelectAll(!selectAll); // Toggle "select all" state
+  };
+
+  // Open the credit modal
+  const handleOpenCreditModal = () => {
+    setCreditModalOpen(true); // Open the credit modal
+  };
+
+  // Handle credit addition to selected users
+  const handleAddCredits = async () => {
+    const updatedUsers = Array.from(selectedUsers);
+    try {
+      // Loop through the selected users and update their credit in Firestore
+      for (const userId of updatedUsers) {
+        const userRef = doc(firestore, 'users', userId);
+
+        const userDoc = await getDoc(userRef);
+        const userData = userDoc.data();
+        const currentCredits = userData?.credits || 0;
+        const newCreditAmount = currentCredits + creditAmount;
+
+
+        await updateDoc(userRef, {
+          credits: newCreditAmount, // Update the user's credit
+        });
+      }
+      alert('Credits added successfully!');
+      setCreditAmount(0); // Reset the credit amount
+      setCreditModalOpen(false); // Close the modal
+    } catch (error) {
+      console.error('Error adding credits:', error);
+      alert('Failed to add credits. Please try again later.');
+    }
   };
 
   return (
@@ -149,6 +203,22 @@ const ManageUsers: React.FC = () => {
           >
             + Add User
           </button>
+          <button
+            onClick={handleOpenCreditModal}
+            style={{
+              backgroundColor: '#30368A',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '10px',
+              border: 'none',
+              cursor: 'pointer',
+              height: '40px',
+              marginLeft: '10px',
+              paddingBottom: '10px',
+            }}
+          >
+            + Credits
+          </button>
         </div>
       </div>
 
@@ -156,6 +226,21 @@ const ManageUsers: React.FC = () => {
       <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
         <thead style={{ backgroundColor: '#f0f0f0' }}>
           <tr>
+            <th style={{ textAlign: 'left', padding: '8px' }}>
+              <input
+                type="checkbox"
+                checked={selectAll}
+                onChange={handleSelectAllChange} // Select or deselect all checkboxes
+                style={{
+                  border: '1px solid grey',
+                  backgroundColor: 'transparent',
+                  borderRadius: '5px',
+                  marginTop: '5px',
+                  height: '20px',
+                  width: '20px',
+                }}
+              />
+            </th>
             <th style={{ textAlign: 'left', padding: '8px' }}>Name</th>
             <th style={{ textAlign: 'left', padding: '8px' }}>Email</th>
             <th style={{ textAlign: 'left', padding: '8px' }}>User Type</th>
@@ -165,6 +250,20 @@ const ManageUsers: React.FC = () => {
         <tbody>
           {users.map((user, index) => (
             <tr key={index} style={{ borderBottom: '1px solid #ddd' }}>
+              <td style={{ textAlign: 'left', padding: '8px' }}>
+                <input
+                  type="checkbox"
+                  checked={selectedUsers.has(user.id)}
+                  onChange={() => handleUserCheckboxChange(user.id)} // Handle individual user checkbox change
+                  style={{
+                    border: '1px solid grey',
+                    backgroundColor: 'transparent',
+                    borderRadius: '5px',
+                    height: '20px',
+                    width: '20px',
+                  }}
+                />
+              </td>
               <td style={{ textAlign: 'left', padding: '8px' }}>
                 {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : 'N/A'}
               </td>
@@ -189,7 +288,6 @@ const ManageUsers: React.FC = () => {
 
                 {/* Rubbish Bin (Delete) Icon */}
                 <button
-                  onClick={() => handleDelete(user.id)}
                   style={{
                     backgroundColor: 'transparent',
                     border: 'none',
@@ -217,8 +315,108 @@ const ManageUsers: React.FC = () => {
         </tbody>
       </table>
 
+      {/* Credit Modal */}
+    {creditModalOpen && (
+      <div style={{ position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', width: '300px', position: 'relative' }}>
+          {/* Close Icon */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              cursor: 'pointer',
+            }}
+            onClick={handleCloseCreditModal} // Close the modal on click
+          >
+            <img
+              src="/circle-cross.svg" // Replace with the path to your SVG icon
+              alt="Close"
+              style={{
+                width: '20px',
+                height: '20px',
+              }}
+            />
+          </div>
+
+          <h3 style={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center' }}>Add Credits</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px', marginTop: '30px' }}>
+            <button
+              style={{
+                backgroundColor: '#30368A',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                fontSize: '16px',
+              }}
+              onClick={() => setCreditAmount(creditAmount + 1)}
+            >
+              +
+            </button>
+            <input
+              type="number"
+              value={creditAmount}
+              onChange={(e) => setCreditAmount(Number(e.target.value))}
+              style={{
+                width: '60px',
+                padding: '5px',
+                textAlign: 'center',
+                border: '1px solid grey',
+                borderRadius: '5px',
+                fontSize: '16px',
+                marginLeft: '10px',
+                marginRight: '10px',
+              }}
+            />
+            <button
+              style={{
+                backgroundColor: '#30368A',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                fontSize: '16px',
+              }}
+              onClick={() => setCreditAmount(creditAmount - 1)}
+            >
+              -
+            </button>
+          </div>
+          <div style={{ marginBottom: '30px', marginTop: '30px' }}>
+            <button
+              onClick={handleAddCredits}
+              style={{
+                backgroundColor: '#30368A',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '10px',
+                border: 'none',
+                cursor: 'pointer',
+                width: '100%',
+              }}
+            >
+              Add Credits
+            </button>
+          </div>
+          <div style={{ marginBottom: '10px', textAlign: 'center', marginTop: '30px' }}>
+            <span style={{ fontSize: '18px', fontWeight: 'bold' }}>For Users:</span>
+            <div style={{ marginTop: '10px' }}>
+              <ul>
+                {Array.from(selectedUsers).map((userId) => (
+                  <li key={userId}>{users.find((user) => user.id === userId)?.firstName}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+
       {/* AddUserModal */}
       <AddUserModal isOpen={isModalOpen} onClose={handleCloseModal} />
+      
     </div>
   );
 };

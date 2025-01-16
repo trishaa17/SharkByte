@@ -15,6 +15,7 @@ export default function SignUpPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(''); // Added success state
   const router = useRouter(); // Router for redirection after sign-up
+  const [credits] = useState(0); // Initialize credits to 0 but don't show it in the form
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,11 +58,11 @@ export default function SignUpPage() {
         lastName, // Save last name
         email: userCredential.user.email,
         userType, // Save the userType
+        credits, // Save the initial credits value (0)
       });
 
       // Show success message
       setError(''); // Clear error message
-
       setSuccess('Sign-up successful! Redirecting to login...');
 
       // Redirect to login page after 2 seconds
