@@ -1,0 +1,104 @@
+/* Overall Container */
+.preorders-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: white;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  
+  /* Title */
+  .page-title {
+    text-align: left;
+    width: 100%;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #30368A; /* Title color */
+  }
+  
+  /* Tabs and Filter Container (Search before Date Filter) */
+  .tabs-and-filter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  
+  /* Search Filter */
+  .search-filter {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .search-input {
+    padding: 5px;
+    font-size: 14px;
+    color: black;
+    border: 1px solid #686db0;
+    border-radius: 5px;
+    width: 200px;
+  }
+  
+  
+  /* Date Filter */
+  .date-filter {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .date-filter input {
+    padding: 5px;
+    font-size: 14px;
+    border: 1px solid black; /* Adding border */
+    border-radius: 5px;
+    color: black;
+  }
+  
+  .date-filter input:focus {
+    outline: none;
+    border-color: #1a2577; /* Darker border color on focus */
+  }
+  
+  
+  /* Table */
+  .preorders-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .preorders-table th,
+  .preorders-table td {
+    text-align: center;
+    padding: 10px;
+  }
+  
+  .preorders-table th {
+    color: black;
+    background-color: #f0f0f0
+    ;
+  }
+  
+  .preorders-table tr {
+    background-color: white;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  /* Product Info */
+  .product-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .product-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+  }
+  

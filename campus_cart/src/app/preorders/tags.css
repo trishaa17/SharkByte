@@ -1,0 +1,242 @@
+/* Overall Container */
+.preorders-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: white;
+  padding: 20px;
+  min-height: 100vh;
+  width: 100%; /* Ensure container takes full width */
+}
+
+/* Title */
+.page-title {
+  text-align: left;
+  width: 100%;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #30368a; /* Orange color for title */
+}
+
+/* Tabs and Date Filter Container */
+.tabs-and-filter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.tab {
+  padding: 10px 20px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  color: black;
+  border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+  color: black;
+  border-bottom: 5px solid #686db0;
+}
+
+/* Date Range Filter */
+.date-filter {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.date-filter input {
+  padding: 5px;
+  font-size: 14px;
+  color: black;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.date-filter span {
+  font-size: 16px;
+  color: black;
+}
+
+/* Table */
+.preorders-table {
+  width: 100vw; /* Full width of the window */
+  border-collapse: collapse;
+  margin: 0; /* Remove any default margin */
+  table-layout: fixed; /* Fixed layout to ensure equal column widths */
+}
+
+.preorders-table th,
+.preorders-table td {
+  text-align: center;
+  padding: 8px 12px; /* Reduced padding for smaller row height */
+  word-wrap: break-word; /* Ensure content wraps within the cells */
+}
+
+.preorders-table th {
+  color: black;
+  background-color: #f0f0f0;
+}
+
+.preorders-table tr {
+  background-color: white;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Product Info */
+.product-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.product-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+/* Tag Colors */
+.tag.available {
+  color: white;
+  background-color: #70c67e;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.tag.pending {
+  color: white;
+  background-color: #ffd15d;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.tag.unavailable {
+  color: white;
+  background-color: #f28c8c;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+/* Action Buttons */
+.buy-button {
+  background-color: #686db0; /* Orange background for button */
+  color: white;
+  padding: 8px 15px;
+  border: 1px solid #686db0; /* Orange border for button */
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.buy-button:hover {
+  background-color: #686db0; /* Slightly darker orange on hover */
+}
+
+/* Action Buttons Container */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Remove Product Button */
+.remove-button {
+  background-color: #f28c8c; /* Red background for remove button */
+  color: white;
+  padding: 8px 15px;
+  border: 1px solid #f28c8c;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.remove-button:hover {
+  background-color: #e24b4b; /* Darker red on hover */
+}
+
+/* Popup Message Styling */
+.popup-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centered on the page */
+  background-color: rgb(101, 101, 101);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  z-index: 9999;
+  width: 300px; /* Set a fixed width */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow for better visibility */
+  text-align: center; /* Ensure text is centered */
+  font-weight: bold; /* Bold font for visibility */
+}
+
+/* Popup Overlay for Buy Product */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9998;
+}
+
+/* Popup Styling for Buy Product */
+.popup {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 300px; /* Set width for consistency */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for visibility */
+}
+
+/* Yes/No Buttons in Buy Product Confirmation */
+.popup-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.yes-button, .no-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.yes-button {
+  background-color: #63b370;
+  color: white;
+}
+
+.no-button {
+  background-color: #e24b4b; 
+  color: white;
+}
+
+.yes-button:hover {
+  background-color: #55a261; 
+}
+
+.no-button:hover {
+  background-color: #a73535;
+}
