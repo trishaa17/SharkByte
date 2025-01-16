@@ -22,7 +22,7 @@ export default function HomePage() {
         if (userType === 'resident') {
           router.push('/resident-dashboard'); // Example path for residents
         } else if (userType === 'staff') {
-          router.push('/staff-dashboard'); // Example path for staff
+          router.push('/admin/inventory'); 
         }
       } catch (error) {
         setError('Invalid email or password. Please try again.');
@@ -38,7 +38,7 @@ export default function HomePage() {
       <div
         style={{
           flex: 1,
-          backgroundColor: '#006400',
+          backgroundColor: '#30368A',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
