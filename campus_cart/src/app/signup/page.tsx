@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'; // Next.js router for redirection
 import { getFirestore, doc, setDoc } from 'firebase/firestore'; // Import Firestore
 
 export default function SignUpPage() {
+  const [firstName, setFirstName] = useState(''); // State for First Name
+  const [lastName, setLastName] = useState(''); // State for Last Name
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -51,8 +53,10 @@ export default function SignUpPage() {
 
       // Create a new user document in Firestore
       await setDoc(doc(db, 'users', userCredential.user.uid), {
+        firstName, // Save first name
+        lastName, // Save last name
         email: userCredential.user.email,
-        userType: userType, // Save the userType
+        userType, // Save the userType
       });
 
       // Show success message
@@ -64,7 +68,7 @@ export default function SignUpPage() {
       setTimeout(() => {
         router.push('/login'); // Redirect to login page
       }, 2000);
-    } catch (error:any) {
+    } catch (error: any) {
       if (error.code === 'auth/email-already-in-use') {
         setError('An account with this email address already exists. Please log in or use a different email.');
       } else {
@@ -112,7 +116,6 @@ export default function SignUpPage() {
           {success && <p style={{ color: 'green', textAlign: 'center' }}>{success}</p>}
 
           <form onSubmit={handleSubmit}>
-
             {/* Resident or Staff selection */}
             <div style={{ marginBottom: '20px', marginTop: '30px', textAlign: 'center' }}>
               <label style={{ color: 'black', fontSize: '16px' }}>
@@ -137,6 +140,54 @@ export default function SignUpPage() {
                 />
                 Staff
               </label>
+            </div>
+
+            {/* First Name Input */}
+            <div style={{ marginBottom: '20px' }}>
+              <label htmlFor="firstName" style={{ color: 'black', fontSize: '14px' }}>
+                First Name
+              </label>
+              <input
+                type="text"
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Enter your first name"
+                required
+                style={{
+                  width: '100%',
+                  padding: '5px',
+                  border: 'none',
+                  borderBottom: '2px solid gray',
+                  marginTop: '5px',
+                  fontSize: '14px',
+                  color: 'black',
+                }}
+              />
+            </div>
+
+            {/* Last Name Input */}
+            <div style={{ marginBottom: '20px' }}>
+              <label htmlFor="lastName" style={{ color: 'black', fontSize: '14px' }}>
+                Last Name
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Enter your last name"
+                required
+                style={{
+                  width: '100%',
+                  padding: '5px',
+                  border: 'none',
+                  borderBottom: '2px solid gray',
+                  marginTop: '5px',
+                  fontSize: '14px',
+                  color: 'black',
+                }}
+              />
             </div>
 
             {/* Email Input */}
@@ -233,9 +284,9 @@ export default function SignUpPage() {
 
           {/* Redirect to Login Link */}
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <p style={{ fontSize: '14px', color: 'black'}}>
+            <p style={{ fontSize: '14px', color: 'black' }}>
               Already have an account?{' '}
-              <a href="/login" style={{ textDecoration: 'underline'}}>
+              <a href="/login" style={{ textDecoration: 'underline' }}>
                 Log in here.
               </a>
             </p>
