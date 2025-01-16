@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -14,8 +16,8 @@ const Home = () => {
   const items = [
     { id: 1, name: 'Notebook', price: 10 },
     { id: 2, name: 'Pen', price: 2 },
-    { id: 3, name: 'Backpack',
-      { id: 4, name: 'Water Bottle', price: 15 },
+    { id: 3, name: 'Backpack'},
+    { id: 4, name: 'Water Bottle', price: 15 },
     ];
   
     const currentUser = auth.currentUser;

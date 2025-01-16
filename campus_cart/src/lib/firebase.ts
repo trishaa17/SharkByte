@@ -18,6 +18,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const firestore = getFirestore(app);
 const analytics = getAnalytics(app);
+const db = getFirestore(app);
+
 
 // Reauthenticate User
 const reauthenticateUser = async (user: User, currentPassword: string) => {
@@ -90,4 +92,5 @@ export {
   updateUserRole, 
   deleteUser,
   updatePasswordForUser, 
+  db,
 };

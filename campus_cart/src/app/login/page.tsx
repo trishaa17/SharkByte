@@ -2,27 +2,50 @@
 
 import { useState } from 'react';
 import { auth, signInWithEmailAndPassword } from '../../lib/firebase'; // Adjust the path to firebase.ts
-import { useRouter } from 'next/navigation'; // Next.js router for redirect
+import { doc, getDoc } from 'firebase/firestore'; // Firestore methods
+import { db } from '../../lib/firebase'; // Firestore instance
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
   const [userType, setUserType] = useState<'resident' | 'staff' | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const router = useRouter(); // Router for redirection after login
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (userType && email && password) {
+
+    if (!userType) {
+      setError('Please select Resident or Staff.');
+      return;
+    }
+
+    if (email && password) {
       try {
         // Sign in with Firebase
-        await signInWithEmailAndPassword(auth, email, password);
-        
-        // On successful login, redirect user based on userType
-        if (userType === 'resident') {
-          router.push('/user/home'); // Example path for residents
-        } else if (userType === 'staff') {
-          router.push('/staff/inventory'); 
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Fetch user role from Firestore
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const userRole = userData.role;
+
+          // Check if userRole matches the selected userType
+          if (userRole === userType) {
+            // Redirect to respective dashboard
+            if (userRole === 'resident') {
+              router.push('/user/home'); // Example path for residents
+            } else if (userRole === 'staff') {
+              router.push('/staff/inventory'); // Example path for staff
+            }
+          } else {
+            setError(`You do not have access as ${userType}.`);
+          }
+        } else {
+          setError('User data not found. Please contact support.');
         }
       } catch (error) {
         setError('Invalid email or password. Please try again.');
@@ -56,7 +79,7 @@ export default function HomePage() {
           justifyContent: 'center',
           alignItems: 'center',
           padding: '20px',
-          backgroundColor: 'white', // Set white background here
+          backgroundColor: 'white',
         }}
       >
         <div style={{ width: '100%', maxWidth: '400px' }}>
@@ -65,7 +88,7 @@ export default function HomePage() {
           </div>
 
           {/* Error message */}
-          {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+          {error && <p style={{ color: 'red', textAlign: 'center', marginBottom: '20px'}}>{error}</p>}
 
           <form onSubmit={handleSubmit}>
             {/* Resident or Staff selection */}
@@ -171,9 +194,9 @@ export default function HomePage() {
 
           {/* Sign Up Link */}
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <p style={{ fontSize: '14px', color: 'black'}}>
+            <p style={{ fontSize: '14px', color: 'black' }}>
               Don't have an account?{' '}
-              <a href="/signup" style={{ textDecoration: 'underline'}}>
+              <a href="/signup" style={{ textDecoration: 'underline' }}>
                 Sign up here.
               </a>
             </p>
