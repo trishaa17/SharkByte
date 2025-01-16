@@ -1,128 +1,330 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
-import './Home.css';
+import { firestore } from "../../../lib/firebase"; // Your Firebase initialization file
 
-const Home = () => {
-  const [popupMessage, setPopupMessage] = useState<string | null>(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+const auth = getAuth();
+const db = firestore;
 
-  const auth = getAuth();
-  const db = getFirestore();
+const ProductHome = () => {
+  const [products, setProducts] = useState([]);
+  const [quantities, setQuantities] = useState({});  // State to hold quantities for each product
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [finalPrice, setFinalPrice] = useState(0);
+  const [userCredits, setUserCredits] = useState(0); // State to hold user credits
 
-  const items = [
-    { id: 1, name: 'Notebook', price: 10 },
-    { id: 2, name: 'Pen', price: 2 },
-    { id: 3, name: 'Backpack'},
-    { id: 4, name: 'Water Bottle', price: 15 },
-    ];
-  
-    const currentUser = auth.currentUser;
-  
-    const handleBuyClick = (itemName: string) => {
-      setSelectedItem(itemName);
-      setShowConfirmation(true);
-    };
-  
-    const handleConfirmPurchase = async () => {
-      if (!currentUser) {
-        setPopupMessage('You must be logged in to make a purchase.');
-        setShowConfirmation(false);
-        return;
-      }
-  
-      const { displayName, email } = currentUser;
-  
+  useEffect(() => {
+    // Fetch products from Firestore
+    const fetchProducts = async () => {
       try {
-        const userProductsRef = doc(collection(db, 'userProducts'), email as string);
-        
-        await setDoc(
-          userProductsRef,
-          { 
-            fullName: displayName,
-            email: email,
-            purchasedItems: arrayUnion(selectedItem),
-          },
-          { merge: true }
-        );
-  
-        setPopupMessage(`${selectedItem} has been added to your products.`);
+        const productsRef = collection(db, 'inventory'); // Fetch collection (not a document)
+        const productSnapshot = await getDocs(productsRef);
+        const productList = productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setProducts(productList); // Set products data
       } catch (error) {
-        setPopupMessage('Error saving purchase. Please try again.');
+        console.error("Error fetching products: ", error);
       }
-  
-      setShowConfirmation(false);
-      setSelectedItem(null);
     };
-  
-    const handleCancelPurchase = () => {
-      setShowConfirmation(false);
-      setSelectedItem(null);
+
+    // Fetch user credits from Firestore
+    const fetchUserCredits = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        const userSnapshot = await getDoc(userRef);
+        const userData = userSnapshot.data();
+        setUserCredits(userData?.credits || 0); // Set user credits
+      }
     };
+
+    fetchProducts();
+    fetchUserCredits();
+  }, []);
+
+  const handleQuantityChange = (id, increment) => {
+    setQuantities((prevQuantities) => {
+      const newQuantity = prevQuantities[id] + increment;
+      return { ...prevQuantities, [id]: newQuantity >= 0 ? newQuantity : 0 };
+    });
+  };
+
+  const handleBuyClick = (product) => {
+    const quantity = quantities[product.id] || 0;
+    const totalPrice = quantity * product.price; // Calculate total price
+
+    setFinalPrice(totalPrice);
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmPurchase = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnapshot = await getDoc(userRef);
+      const userData = userSnapshot.data();
+      const currentCredits = userData?.credits || 0;
   
-    const handlePreorderClick = (itemName: string) => {
-      setPopupMessage(`${itemName} preordered`);
-    };
+      if (currentCredits >= finalPrice) {
+        // Deduct credits from user account
+        await updateDoc(userRef, {
+          credits: currentCredits - finalPrice,
+        });
   
-    const handleClosePopup = () => {
-      setPopupMessage(null);
-    };
+        // Store purchase details in buyRequest collection
+        const buyRequestRef = collection(db, 'buyRequest');
+        await addDoc(buyRequestRef, {
+          productName: selectedProduct.name,
+          quantity: quantities[selectedProduct.id] || 0,
+          totalAmount: finalPrice,
+          userFirstName: userData?.firstName,
+          userLastName: userData?.lastName,
+          userEmail: userData?.email,
+          purchasedAt: new Date(), 
+        });
   
-    return (
-      <div className="home-page">
-        <h1 className="header">Campus Cart</h1>
+        // Proceed with buying the product (you can further update product inventory or other actions)
+        console.log('Purchase confirmed:', selectedProduct.name);
+        setUserCredits(currentCredits - finalPrice); // Update the credits state
+      } else {
+        alert('Insufficient credits');
+      }
+    }
+    setIsModalOpen(false);
+  };
   
-        <div className="items-container">
-          {items.map((item) => (
-            <div className="item-box" key={item.id}>
-              <h3>{item.name}</h3>
-              <p>Price: ${item.price}</p>
-              <div className="button-container">
-                <button className="buy-button" onClick={() => handleBuyClick(item.name)}>
+
+  const handlePreOrder = async (product) => {
+    const preOrderRef = doc(db, 'preorders', product.id);
+    await updateDoc(preOrderRef, {
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      preOrderedBy: auth.currentUser?.uid,
+      status: 'preordered',
+    });
+    alert('Item has been preordered!');
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Product Inventory</h1>
+        <div style={styles.creditsContainer}>
+          <p style={styles.creditsText}>Credits: {userCredits}</p>
+        </div>
+      </div>
+      <div style={styles.inventoryContainer}>
+        {products.map((product) => (
+          <div key={product.id} style={styles.productCard}>
+            <img src={product.image} alt={product.name} style={styles.productImage} />
+            <h3>{product.name}</h3>
+            <p>{product.description}</p>
+            <p>Price: {product.price}</p>
+
+            <div style={styles.buySection}>
+              <div style={styles.quantityButtons}>
+                <button
+                  style={styles.plusMinusButton}
+                  onClick={() => handleQuantityChange(product.id, -1)}
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  value={quantities[product.id] || 0}
+                  readOnly
+                  style={styles.quantityInput}
+                />
+                <button
+                  style={styles.plusMinusButton}
+                  onClick={() => handleQuantityChange(product.id, 1)}
+                >
+                  +
+                </button>
+              </div>
+              {product.stock === 0 ? (
+                <button
+                  style={styles.preOrderButton}
+                  onClick={() => handlePreOrder(product)}
+                >
+                  Pre-order
+                </button>
+              ) : (
+                <button
+                  style={styles.buyButton}
+                  onClick={() => handleBuyClick(product)}
+                >
                   Buy
                 </button>
-                <button className="preorder-button" onClick={() => handlePreorderClick(item.name)}>
-                  Preorder
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-  
-        {/* Confirmation Popup */}
-        {showConfirmation && (
-          <div className="popup-overlay">
-            <div className="popup">
-              <p>Do you confirm you want to purchase {selectedItem}?</p>
-              <div className="popup-buttons">
-                <button className="yes-button" onClick={handleConfirmPurchase}>
-                  Yes
-                </button>
-                <button className="no-button" onClick={handleCancelPurchase}>
-                  No
-                </button>
-              </div>
+              )}
             </div>
           </div>
-        )}
-  
-        {/* Message Popup */}
-        {popupMessage && (
-          <div className="popup-overlay">
-            <div className="popup">
-              <p>{popupMessage}</p>
-              <button className="close-popup-button" onClick={handleClosePopup}>
-                Close
+        ))}
+      </div>
+
+      {isModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContainer}>
+            <h3>Confirm Purchase</h3>
+            <p>Final price: {finalPrice}</p>
+            <div style={styles.modalButtons}>
+              <button
+                style={styles.cancelButton}
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                style={styles.confirmButton}
+                onClick={handleConfirmPurchase}
+              >
+                Confirm
               </button>
             </div>
           </div>
-        )}
-      </div>
-    );
-  };
-  
-export default Home;
-  
+        </div>
+      )}
+    </div>
+  );
+};
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    fontFamily: 'Arial, sans-serif',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: '10px 20px',
+  },
+  title: {
+    fontSize: '2rem',
+    fontWeight: 'bold',
+    marginBottom: '20px',
+  },
+  creditsContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+  },
+  creditsText: {
+    marginRight: '10px',
+  },
+  inventoryContainer: {
+    display: 'flex',
+    overflowX: 'auto',
+    gap: '20px',
+    padding: '10px 0',
+  },
+  productCard: {
+    width: '250px',
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    padding: '15px',
+    textAlign: 'center',
+    backgroundColor: '#f9f9f9',
+  },
+  productImage: {
+    width: '100%',
+    height: 'auto',
+    maxHeight: '200px',
+    objectFit: 'cover',
+    borderRadius: '8px',
+    marginBottom: '15px',
+  },
+  buySection: {
+    marginTop: '10px',
+  },
+  quantityInput: {
+    width: '50px',
+    textAlign: 'center',
+    marginRight: '10px',
+    padding: '5px',
+    fontSize: '16px',
+  },
+  quantityButtons: {
+    display: 'inline-block',
+  },
+  plusMinusButton: {
+    padding: '10px',
+    fontSize: '16px',
+    margin: '5px',
+    cursor: 'pointer',
+    backgroundColor: '#30368A',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+  },
+  buyButton: {
+    padding: '10px 20px',
+    backgroundColor: '#28a745',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    marginTop: '10px',
+  },
+  preOrderButton: {
+    padding: '10px 20px',
+    backgroundColor: '#f39c12',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    marginTop: '10px',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
+  },
+  modalContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    padding: '20px',
+    backgroundColor: '#fff',
+    borderRadius: '8px',
+    boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+    width: '300px',
+  },
+  modalButtons: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  confirmButton: {
+    padding: '10px 20px',
+    backgroundColor: '#28a745',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+  },
+  cancelButton: {
+    padding: '10px 20px',
+    backgroundColor: '#e74c3c',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+  },
+};
+
+export default ProductHome;

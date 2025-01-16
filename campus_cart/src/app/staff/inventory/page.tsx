@@ -181,17 +181,17 @@ const InventoryManagement: React.FC = () => {
                         type="number"
                         placeholder="Qty"
                         min="1"
-                        onChange={(e) => item.inputQuantity = parseInt(e.target.value) || 0} // Temporary quantity value
+                        onChange={(e) => item.quantity = parseInt(e.target.value) || 0} // Temporary quantity value
                         style={styles.quantityInput}
                       />
                       <button
-                        onClick={() => handleUpdateQuantity(item.id, item.inputQuantity || 1)} // Default to 1 if no value is input
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity || 1)} // Default to 1 if no value is input
                         style={styles.actionButton}
                       >
                         +
                       </button>
                       <button
-                        onClick={() => handleUpdateQuantity(item.id, -(item.inputQuantity || 1))}
+                        onClick={() => handleUpdateQuantity(item.id, -(item.quantity || 1))}
                         style={styles.actionButton}
                       >
                         -
