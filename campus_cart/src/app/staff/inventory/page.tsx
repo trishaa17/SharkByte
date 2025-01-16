@@ -7,6 +7,7 @@ import { firestore } from "../../../lib/firebase"; // Adjust the path to match y
 interface InventoryItem {
   id: string;
   name: string;
+  price: number;
   quantity: number;
   image: string;
 }
@@ -20,6 +21,7 @@ const InventoryManagement: React.FC = () => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [newItemName, setNewItemName] = useState('');
+  const [newItemPrice, setNewItemPrice] = useState<number | string>('');
   const [newItemQuantity, setNewItemQuantity] = useState<number | string>('');
   const [newItemImage, setNewItemImage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -62,13 +64,14 @@ const InventoryManagement: React.FC = () => {
   }, []);
 
   const handleAddNewItem = async () => {
-    if (!newItemName || !newItemQuantity || !newItemImage) {
-      alert('Please provide item name, quantity, and an image URL.');
+    if (!newItemName || !newItemPrice || !newItemQuantity || !newItemImage) {
+      alert('Please provide item name, price, quantity, and an image URL.');
       return;
     }
 
     const newItem = {
       name: newItemName,
+      price: Number(newItemPrice),
       quantity: Number(newItemQuantity),
       image: newItemImage,
     };
@@ -78,6 +81,7 @@ const InventoryManagement: React.FC = () => {
       setInventory([...inventory, { id: docRef.id, ...newItem }]);
       await logAudit(`Added new item: ${newItem.name} (Quantity: ${newItem.quantity})`);
       setNewItemName('');
+      setNewItemPrice('');
       setNewItemQuantity('');
       setNewItemImage('');
     } catch (error) {
@@ -163,6 +167,7 @@ const InventoryManagement: React.FC = () => {
               <tr>
               <th style={styles.th}>Image</th>
               <th style={styles.th}>Item Name</th>
+              <th style={styles.th}>Credits</th>
               <th style={styles.th}>Quantity</th>
               <th style={styles.th}>Actions</th>
               </tr>
@@ -174,6 +179,7 @@ const InventoryManagement: React.FC = () => {
                     <img src={item.image} alt={item.name} style={styles.image} />
                   </td>
                   <td style={styles.td}>{item.name}</td>
+                  <td style={styles.td}>{item.price}</td>
                   <td style={styles.td}>{item.quantity}</td>
                   <td style={styles.td}>
                     <div style={styles.actionContainer}>
@@ -181,17 +187,17 @@ const InventoryManagement: React.FC = () => {
                         type="number"
                         placeholder="Qty"
                         min="1"
-                        onChange={(e) => item.inputQuantity = parseInt(e.target.value) || 0} // Temporary quantity value
+                        onChange={(e) => item.quantity = parseInt(e.target.value) || 0} // Temporary quantity value
                         style={styles.quantityInput}
                       />
                       <button
-                        onClick={() => handleUpdateQuantity(item.id, item.inputQuantity || 1)} // Default to 1 if no value is input
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity || 1)} // Default to 1 if no value is input
                         style={styles.actionButton}
                       >
                         +
                       </button>
                       <button
-                        onClick={() => handleUpdateQuantity(item.id, -(item.inputQuantity || 1))}
+                        onClick={() => handleUpdateQuantity(item.id, -(item.quantity || 1))}
                         style={styles.actionButton}
                       >
                         -
@@ -217,6 +223,14 @@ const InventoryManagement: React.FC = () => {
               onChange={(e) => setNewItemName(e.target.value)}
               style={styles.input}
             />
+            <label style={styles.label}> Credits </label>
+            <input
+              type="text"
+              placeholder="Enter Item Value"
+              value={newItemPrice}
+              onChange={(e) => setNewItemPrice(e.target.value)}
+              style={styles.input}
+            />
             <label style={styles.label}> Quantity </label>
             <input
               type="number"
@@ -237,7 +251,11 @@ const InventoryManagement: React.FC = () => {
             {/* Button container */}
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' , gap: '20px'}}>
       
-            <button onClick={handleOpenModal} style={{
+            <button onClick={() => {
+                  handleAddNewItem();
+                  handleCloseModal(); // Close the modal after adding item
+                }} 
+                style={{
                 width: '80%',
                 padding: '15px',
                 backgroundColor: '#555555',
