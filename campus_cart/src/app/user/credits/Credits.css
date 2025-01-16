@@ -1,0 +1,299 @@
+/* Credits.css */
+.credits-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  height: 100vh;
+  padding: 20px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.credits-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.credits-line {
+  font-size: 24px;
+  font-weight: bold;
+  color: #006400;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.credits-container {
+  width: 100%;
+  max-width: 1000px; /* Increase max width to allow for a larger container */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Tab Navigation --- */
+.tabs {
+  display: flex;
+  width: 100%;
+  justify-content: space-around; /* Ensure the buttons are spread across the full width */
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex-grow: 1; /* Make each tab take up equal space */
+  padding: 15px 20px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s, color 0.3s;
+  text-align: center; /* Center text in each tab */
+}
+
+.tab:hover {
+  background-color: #e0e0e0;
+}
+
+.tab.active {
+  background-color: #006400;
+  color: white;
+  font-weight: bold;
+}
+
+.credits-content {
+  width: 100%;
+}
+
+.form-container,
+.requests-container {
+  width: 100%;
+  max-width: 2000px;
+}
+
+.form-container h2,
+.requests-container h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #006400;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+textarea {
+  resize: none;
+}
+
+.submit-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background-color: #006400;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+  background-color: #004c00;
+}
+
+/* --- View Requests Section --- */
+
+/* Requests List Container */
+.requests-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 500px; /* Limit height to make it scrollable */
+  overflow-y: auto; /* Add vertical scrolling if content overflows */
+  margin: 0 auto;
+  padding: 20px 0;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1); /* Optional scroll effect */
+}
+
+/* Scrollbar Styling for Requests Container */
+.requests-container::-webkit-scrollbar {
+  width: 8px; /* Scrollbar width */
+}
+
+.requests-container::-webkit-scrollbar-thumb {
+  background: #ccc; /* Scrollbar thumb color */
+  border-radius: 4px; /* Rounded edges */
+}
+
+.requests-container::-webkit-scrollbar-thumb:hover {
+  background: #999; /* Darker color on hover */
+}
+
+.requests-container::-webkit-scrollbar-track {
+  background: #f0f0f0; /* Scrollbar track background */
+}
+
+/* Requests Table */
+.requests-table {
+  width: 100%;
+  border-collapse: collapse; /* Keep the borders collapsed for a cleaner look */
+  margin-top: 20px;
+}
+
+.requests-table th,
+.requests-table td {
+  padding: 10px 15px;
+  text-align: left;
+  border-right: 1px solid #ccc; /* Vertical lines only */
+}
+
+.requests-table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.requests-table td {
+  background-color: white; /* Set the background of the rows to white */
+}
+
+.requests-table tr:last-child td {
+  border-bottom: none; /* Remove the border for the last row */
+}
+
+.requests-table tr:hover {
+  background-color: #f1f1f1; /* Optional hover effect for rows */
+}
+
+/* Removing alternating row background color */
+.requests-table tr:nth-child(even) {
+  background-color: white; /* Remove alternating row background */
+}
+
+/* Individual Request Item */
+.request-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Request Details */
+.request-details {
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+}
+
+/* Status Badge Styling */
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+}
+
+.status-badge.pending {
+  background-color: gray;
+}
+
+.status-badge.accepted {
+  background-color: green;
+}
+
+.status-badge.rejected {
+  background-color: red;
+}
+
+/* Popup styles */
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.popup-content h3 {
+  margin-bottom: 10px;
+}
+
+.popup-content p {
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  background-color: #006400;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  background-color: #004c00;
+}
+
+/* Filter Dropdown */
+.filter-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.filter-container label {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.filter-container select {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
