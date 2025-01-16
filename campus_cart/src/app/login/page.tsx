@@ -20,7 +20,7 @@ export default function HomePage() {
         
         // On successful login, redirect user based on userType
         if (userType === 'resident') {
-          router.push('/resident-dashboard'); // Example path for residents
+          router.push('/user/home'); // Example path for residents
         } else if (userType === 'staff') {
           router.push('/staff/inventory'); 
         }

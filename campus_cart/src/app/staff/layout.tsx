@@ -105,6 +105,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 height: '100%',
                 objectFit: 'cover',
                 borderRadius: '50%',
+                marginLeft: '20px',
               }}
             />
 
