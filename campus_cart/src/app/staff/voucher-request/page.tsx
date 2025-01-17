@@ -65,34 +65,66 @@ const AdminVoucherRequests = () => {
 
   const handleStatusChange = async (requestId: string, newStatus: string) => {
     try {
+      // Find the request being updated
+      const request = requests.find((req) => req.id === requestId);
+      if (!request) throw new Error('Request not found');
+
+      // Prevent redundant updates
+      if (request.status !== 'Pending') {
+        throw new Error('This request has already been processed.');
+      }
+
       const requestDocRef = doc(firestore, 'voucherRequests', requestId);
+
+      // Update the request status in Firestore
       await updateDoc(requestDocRef, {
         status: newStatus,
       });
 
-      // Update local state after status change
-      setRequests((prevRequests) =>
-        prevRequests.map((req) =>
-          req.id === requestId ? { ...req, status: newStatus } : req
-        )
+      // If the request is accepted, update the user's credits
+      if (newStatus === 'Accepted') {
+        const userSnapshot = await getDocs(collection(firestore, 'users'));
+        const userDoc = userSnapshot.docs.find((doc) => doc.data().email === request.email);
+
+        if (!userDoc) {
+          throw new Error(`User with email ${request.email} not found.`);
+        }
+
+        const userData = userDoc.data();
+        const currentCredits = userData.credits || 0; // Default to 0 if no credits field exists
+        const updatedCredits = currentCredits + request.amount;
+
+        // Update the user's credits in Firestore
+        const userDocRef = doc(firestore, 'users', userDoc.id);
+        await updateDoc(userDocRef, {
+          credits: updatedCredits,
+        });
+      }
+
+      // Manually update both requests and filteredRequests state immediately
+      const updatedRequests = requests.map((req) =>
+        req.id === requestId ? { ...req, status: newStatus } : req
       );
-      applyFilter(filter); // Reapply filter after update
+
+      setRequests(updatedRequests); // Update the requests array
+      applyFilter(filter, updatedRequests); // Apply the filter with the updated data
+
     } catch (error) {
-      setError('Failed to update request status');
+      setError('Failed to update request status or user credits');
       console.error('Error updating status: ', error);
     }
   };
 
   const handleFilterChange = (selectedFilter: string) => {
     setFilter(selectedFilter);
-    applyFilter(selectedFilter);
+    applyFilter(selectedFilter, requests); // Ensure filter is applied to the current requests
   };
 
-  const applyFilter = (selectedFilter: string) => {
+  const applyFilter = (selectedFilter: string, requestsList: VoucherRequest[]) => {
     if (selectedFilter === 'All') {
-      setFilteredRequests(requests);
+      setFilteredRequests(requestsList);
     } else {
-      setFilteredRequests(requests.filter((req) => req.status === selectedFilter));
+      setFilteredRequests(requestsList.filter((req) => req.status === selectedFilter));
     }
   };
 
