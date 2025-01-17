@@ -239,7 +239,7 @@ const ProductHome = () => {
         {products.map((product) => (
           <div key={product.id} style={styles.productCard}>
             <img src={product.image} alt={product.name} style={styles.productImage} />
-            <h3>{product.name}</h3>
+            <h3 style={styles.productName}>{product.name}</h3>
             <p>{product.description}</p>
             <p>Credits required: {product.price}</p>
             <p>Qty left: {product.quantity}</p>
@@ -255,7 +255,12 @@ const ProductHome = () => {
                 <input
                   type="number"
                   value={quantities[product.id] || 0}
-                  onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value, 10))}
+                  onChange={(e) =>
+                    setQuantities((prevQuantities) => ({
+                      ...prevQuantities,
+                      [product.id]: Math.max(Number(e.target.value), 0),
+                    }))
+                  }
                   style={styles.quantityInput}
                 />
                 <button
@@ -266,19 +271,19 @@ const ProductHome = () => {
                 </button>
               </div>
 
-              {product.quantity > 0 ? (
+              {product.quantity === 0 ? (
+                <button
+                  style={{ ...styles.buyButton, backgroundColor: '#FFD700' }}
+                  onClick={() => handlePreOrderClick(product)}
+                >
+                  Pre-order Now
+                </button>
+              ) : (
                 <button
                   style={styles.buyButton}
                   onClick={() => handleBuyClick(product)}
                 >
-                  Buy
-                </button>
-              ) : (
-                <button
-                  style={styles.preOrderButton}
-                  onClick={() => handlePreOrderClick(product)}
-                >
-                  Pre-order
+                  Buy Now
                 </button>
               )}
             </div>
@@ -286,149 +291,197 @@ const ProductHome = () => {
         ))}
       </div>
 
-      {/* Modal for purchase confirmation */}
-      {isModalOpen && (
+      {isModalOpen && selectedProduct && (
         <div style={styles.modal}>
-          <h2>Confirm Purchase</h2>
-          <p>Product: {selectedProduct?.name}</p>
-          <p>Total Price: {finalPrice}</p>
-          <p>Quantity: {quantities[selectedProduct?.id || '']}</p>
-          <button style={styles.confirmButton} onClick={handleConfirmPurchase}>
-            Confirm Purchase
-          </button>
-          <button style={styles.cancelButton} onClick={() => setIsModalOpen(false)}>
-            Cancel
-          </button>
+          <div style={styles.modalContent}>
+            <h3>Confirm Purchase</h3>
+            <p>
+              <strong>{selectedProduct.name}</strong>
+            </p>
+            <p>Price: {finalPrice} credits</p>
+            <p>Are you sure you want to proceed with this purchase?</p>
+            <div style={styles.modalButtons}>
+              <button style={styles.cancelButton} onClick={() => setIsModalOpen(false)}>
+                Cancel
+              </button>
+              <button style={styles.confirmButton} onClick={handleConfirmPurchase}>
+                Confirm
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Modal for Pre-order confirmation */}
-      {isPreOrderModalOpen && (
+      {isPreOrderModalOpen && selectedProduct && (
         <div style={styles.modal}>
-          <h2>Confirm Pre-order</h2>
-          <p>Product: {selectedProduct?.name}</p>
-          <p>Total Price: {finalPrice}</p>
-          <p>Quantity: {quantities[selectedProduct?.id || '']}</p>
-          <button style={styles.confirmButton} onClick={handleConfirmPreOrder}>
-            Confirm Pre-order
-          </button>
-          <button style={styles.cancelButton} onClick={handleCancelPreOrder}>
-            Cancel
-          </button>
+          <div style={styles.modalContent}>
+            <h3>Confirm Pre-order</h3>
+            <p>
+              <strong>{selectedProduct.name}</strong>
+            </p>
+            <p>Price: {finalPrice} credits</p>
+            <p>Are you sure you want to place a pre-order?</p>
+            <div style={styles.modalButtons}>
+              <button style={styles.cancelButton} onClick={handleCancelPreOrder}>
+                Cancel
+              </button>
+              <button style={styles.confirmButton} onClick={handleConfirmPreOrder}>
+                Confirm
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Display success or error messages */}
       {successMessage && <div style={styles.successMessage}>{successMessage}</div>}
       {errorMessage && <div style={styles.errorMessage}>{errorMessage}</div>}
     </div>
   );
 };
 
-// Add your custom styles here (e.g., for container, inventory, modal, buttons)
+// Styling
 const styles = {
   container: {
-    padding: '20px',
+    fontFamily: 'Arial, sans-serif',
+    margin: '20px',
   },
   header: {
-    textAlign: 'center',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: '20px',
+    borderBottom: '2px solid #ccc',
   },
   title: {
-    fontSize: '2rem',
+    fontSize: '24px',
+    fontWeight: 'bold',
   },
   creditsContainer: {
-    marginTop: '10px',
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    padding: '10px',
+    borderRadius: '5px',
   },
   creditsText: {
-    fontSize: '1rem',
+    margin: 0,
+    fontWeight: 'bold',
   },
   inventoryContainer: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+    display: 'flex',
+    flexWrap: 'wrap',
     gap: '20px',
     marginTop: '20px',
   },
   productCard: {
-    border: '1px solid #ddd',
-    padding: '10px',
-    borderRadius: '5px',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    padding: '20px',
+    width: '200px',
+    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
     textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between', // Distribute content evenly, ensuring buttons are at the bottom
+    minHeight: '350px', // Set a minimum height for the container to make sure buttons are not out of view
   },
+   
   productImage: {
     width: '100%',
-    height: 'auto',
+    height: '150px',
+    objectFit: 'cover',
+    borderRadius: '8px',
+    marginBottom: '15px',
+  },
+  productName: {
+    fontSize: '18px',
+    fontWeight: 'bold',
+    marginBottom: '10px',
   },
   buySection: {
-    marginTop: '10px',
-  },
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    justifyContent: 'flex-end',  // Align buttons to the bottom
+    height: '100%',  // Ensure that the section fills the container to push buttons down
+  }, 
   quantityButtons: {
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: '10px',
+    gap: '5px',
   },
   plusMinusButton: {
-    fontSize: '1.5rem',
     padding: '5px 10px',
-    margin: '0 10px',
+    fontSize: '18px',
+    cursor: 'pointer',
   },
   quantityInput: {
     width: '50px',
     textAlign: 'center',
+    fontSize: '16px',
   },
   buyButton: {
     backgroundColor: '#4CAF50',
     color: 'white',
-    padding: '10px 20px',
+    padding: '10px',
     border: 'none',
-    cursor: 'pointer',
-    marginTop: '10px',
     borderRadius: '5px',
-  },
-  preOrderButton: {
-    backgroundColor: '#ff9800',
-    color: 'white',
-    padding: '10px 20px',
-    border: 'none',
     cursor: 'pointer',
-    marginTop: '10px',
-    borderRadius: '5px',
   },
   modal: {
     position: 'fixed',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: '1000',
+  },
+  modalContent: {
     backgroundColor: 'white',
     padding: '20px',
-    borderRadius: '5px',
-    boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+    borderRadius: '8px',
+    textAlign: 'center',
+    width: '300px',
   },
-  confirmButton: {
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    padding: '10px 20px',
-    border: 'none',
-    cursor: 'pointer',
-    marginRight: '10px',
-    borderRadius: '5px',
+  modalButtons: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '10px',
+    marginTop: '20px',
   },
   cancelButton: {
     backgroundColor: '#f44336',
     color: 'white',
-    padding: '10px 20px',
+    padding: '10px',
     border: 'none',
-    cursor: 'pointer',
     borderRadius: '5px',
+    cursor: 'pointer',
+  },
+  confirmButton: {
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    padding: '10px',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
   },
   successMessage: {
-    color: 'green',
-    marginTop: '10px',
+    marginTop: '20px',
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    padding: '10px',
+    borderRadius: '5px',
     textAlign: 'center',
   },
   errorMessage: {
-    color: 'red',
-    marginTop: '10px',
+    marginTop: '20px',
+    backgroundColor: '#f44336',
+    color: 'white',
+    padding: '10px',
+    borderRadius: '5px',
     textAlign: 'center',
   },
 };
