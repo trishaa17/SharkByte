@@ -90,7 +90,7 @@ const ProductHome = () => {
 
     setFinalPrice(totalPrice);
     setSelectedProduct(product);
-    setIsModalOpen(true);
+    setIsModalOpen(true); // Show the modal when "Buy" is clicked
   };
 
   const handlePreOrderClick = (product: Product) => {
@@ -102,39 +102,70 @@ const ProductHome = () => {
     setIsPreOrderModalOpen(true); // Open pre-order modal
   };
 
-  const handleConfirmPreOrder = async () => {
+  const handleConfirmPurchase = async () => {
     const user = auth.currentUser;
     if (user && selectedProduct) {
+      const quantity = quantities[selectedProduct.id || ''] || 0;
+      const totalPrice = finalPrice;
+
+      if (userCredits < totalPrice) {
+        // Insufficient credits
+        setErrorMessage('Insufficient credits for this purchase.');
+        setTimeout(() => setErrorMessage(''), 2000);
+        return;
+      }
+
+      if (quantity > selectedProduct.quantity) {
+        // Insufficient product quantity
+        setErrorMessage('Not enough stock for the requested quantity.');
+        setTimeout(() => setErrorMessage(''), 2000);
+        return;
+      }
+
       try {
         const userRef = doc(db, 'users', user.uid);
-        const userSnapshot = await getDoc(userRef);
+        const productRef = doc(db, 'inventory', selectedProduct.id);
 
-        if (userSnapshot.exists()) {
-          const userData = userSnapshot.data();
+        // Proceed with the purchase
+        const purchaseRef = collection(db, 'purchases');
+        await addDoc(purchaseRef, {
+          productName: selectedProduct.name,
+          quantity,
+          totalAmount: totalPrice,
+          userEmail: user.email || 'Unknown',
+          userFirstName: user.displayName || 'Unknown',
+          purchasedOn: new Date().toISOString(),
+        });
 
-          // Store pre-order details in the 'preorders' collection
-          const preOrderRef = collection(db, 'preorders');
-          await addDoc(preOrderRef, {
-            productName: selectedProduct.name,
-            quantity: quantities[selectedProduct.id || ''] || 0,
-            totalAmount: finalPrice,
-            userEmail: userData?.email || 'Unknown',
-            userFirstName: userData?.firstName || 'Unknown',
-            userLastName: userData?.lastName || 'Unknown',
-            preorderedOn: new Date().toISOString(), // Save the timestamp in ISO format
-            status: 'pending',
-          });
+        // Deduct credits and update the user
+        await updateDoc(userRef, {
+          credits: userCredits - totalPrice,
+        });
 
-          // Set success message and close modal
-          setSuccessMessage('Pre-order placed successfully!');
-          setTimeout(() => {
-            setSuccessMessage('');
-            setIsPreOrderModalOpen(false); // Close modal
-          }, 2000);
-        }
+        // Reduce product quantity in the inventory
+        await updateDoc(productRef, {
+          quantity: selectedProduct.quantity - quantity,
+        });
+
+        // Update local state for UI
+        setUserCredits(userCredits - totalPrice);
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product.id === selectedProduct.id
+              ? { ...product, quantity: product.quantity - quantity }
+              : product
+          )
+        );
+
+        // Show success message
+        setSuccessMessage('Purchase successful!');
+        setTimeout(() => {
+          setSuccessMessage('');
+          setIsModalOpen(false);
+        }, 2000);
       } catch (error) {
-        console.error('Error placing pre-order:', error);
-        setErrorMessage('An error occurred while placing the pre-order.');
+        console.error('Error confirming purchase:', error);
+        setErrorMessage('An error occurred while processing your purchase.');
         setTimeout(() => setErrorMessage(''), 2000);
       }
     } else {
@@ -145,6 +176,41 @@ const ProductHome = () => {
 
   const handleCancelPreOrder = () => {
     setIsPreOrderModalOpen(false); // Close modal
+  };
+
+  const handleConfirmPreOrder = async () => {
+    const user = auth.currentUser;
+    if (user && selectedProduct) {
+      const quantity = quantities[selectedProduct.id || ''] || 0;
+      const totalPrice = finalPrice;
+
+      try {
+        const userRef = doc(db, 'users', user.uid);
+
+        // Proceed with the pre-order
+        const preOrderRef = collection(db, 'preorders');
+        await addDoc(preOrderRef, {
+          productName: selectedProduct.name,
+          quantity,
+          totalAmount: totalPrice,
+          userEmail: user.email || 'Unknown',
+          userFirstName: user.displayName || 'Unknown',
+          preOrderDate: new Date().toISOString(),
+          status: 'pre-order',  // Set as pre-order
+        });
+
+        // Show success message
+        setSuccessMessage('Pre-order successful!');
+        setTimeout(() => {
+          setSuccessMessage('');
+          setIsPreOrderModalOpen(false);
+        }, 2000);
+      } catch (error) {
+        console.error('Error confirming pre-order:', error);
+        setErrorMessage('An error occurred while processing your pre-order.');
+        setTimeout(() => setErrorMessage(''), 2000);
+      }
+    }
   };
 
   return (
@@ -205,6 +271,34 @@ const ProductHome = () => {
         ))}
       </div>
 
+      {/* Modal for purchase confirmation */}
+      {isModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContainer}>
+            {successMessage && <p style={styles.successMessageModal}>{successMessage}</p>}
+            {errorMessage && <p style={styles.errorMessageModal}>{errorMessage}</p>}
+            <h3>Confirm Purchase</h3>
+            <p>Product: {selectedProduct?.name}</p>
+            <p>Quantity: {quantities[selectedProduct?.id || ''] || 0}</p>
+            <p>Total credits required: {finalPrice}</p>
+            <div style={styles.modalButtons}>
+              <button
+                style={styles.cancelButton}
+                onClick={() => setIsModalOpen(false)} // Close modal without action
+              >
+                Cancel
+              </button>
+              <button
+                style={styles.confirmButton}
+                onClick={handleConfirmPurchase}
+              >
+                Confirm Purchase
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Pre-order confirmation modal */}
       {isPreOrderModalOpen && (
         <div style={styles.modalOverlay}>
@@ -216,17 +310,11 @@ const ProductHome = () => {
             <p>Quantity: {quantities[selectedProduct?.id || ''] || 0}</p>
             <p>Total credits required: {finalPrice}</p>
             <div style={styles.modalButtons}>
-              <button
-                style={styles.cancelButton}
-                onClick={handleCancelPreOrder}
-              >
+              <button style={styles.cancelButton} onClick={handleCancelPreOrder}>
                 Cancel
               </button>
-              <button
-                style={styles.confirmButton}
-                onClick={handleConfirmPreOrder}
-              >
-                Confirm
+              <button style={styles.confirmButton} onClick={handleConfirmPreOrder}>
+                Confirm Pre-order
               </button>
             </div>
           </div>
@@ -236,151 +324,28 @@ const ProductHome = () => {
   );
 };
 
+export default ProductHome;
 
 const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    fontFamily: 'Arial, sans-serif',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    width: '100%',
-    padding: '10px 20px',
-  },
-  title: {
-    fontSize: '2rem',
-    fontWeight: 'bold',
-    marginBottom: '20px',
-  },
-  creditsContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    fontSize: '1.2rem',
-    fontWeight: 'bold',
-  },
-  creditsText: {
-    marginRight: '10px',
-  },
-  successMessageModal: {
-    color: 'green',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: '15px',
-  },
-  errorMessageModal: {
-    color: 'red',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: '15px',
-  },
-  inventoryContainer: {
-    display: 'flex',
-    overflowX: 'auto',
-    gap: '20px',
-    padding: '10px 0',
-  },
-  productCard: {
-    width: '250px',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    padding: '15px',
-    textAlign: 'center',
-    backgroundColor: '#f9f9f9',
-  },
-  productImage: {
-    width: '100%',
-    height: 'auto',
-    maxHeight: '200px',
-    objectFit: 'cover',
-    borderRadius: '8px',
-    marginBottom: '15px',
-  },
-  buySection: {
-    marginTop: '10px',
-  },
-  quantityInput: {
-    width: '50px',
-    textAlign: 'center',
-    marginRight: '10px',
-    marginLeft: '10px',
-    padding: '5px',
-    fontSize: '16px',
-  },
-  quantityButtons: {
-    display: 'flex',
-    justifyContent: 'center',
-    marginBottom: '10px',
-  },
-  plusMinusButton: {
-    fontSize: '18px',
-    width: '30px',
-    height: '30px',
-    border: 'none',
-    backgroundColor: '#ddd',
-    cursor: 'pointer',
-    borderRadius: '4px',
-  },
-  buyButton: {
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    padding: '10px 20px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    borderRadius: '4px',
-  },
-  preOrderButton: {
-    backgroundColor: '#ff9800',
-    color: 'white',
-    border: 'none',
-    padding: '10px 20px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    borderRadius: '4px',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    backgroundColor: 'white',
-    padding: '20px',
-    borderRadius: '8px',
-    textAlign: 'center',
-  },
-  modalButtons: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '20px',
-  },
-  cancelButton: {
-    backgroundColor: '#f44336',
-    color: 'white',
-    padding: '10px 20px',
-    border: 'none',
-    cursor: 'pointer',
-    borderRadius: '4px',
-    marginRight: '10px',
-  },
-  confirmButton: {
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    padding: '10px 20px',
-    border: 'none',
-    cursor: 'pointer',
-    borderRadius: '4px',
-  },
+  container: { padding: '20px' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  title: { margin: 0 },
+  creditsContainer: { display: 'flex', alignItems: 'center' },
+  creditsText: { margin: '0 10px', fontWeight: 'bold' },
+  inventoryContainer: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' },
+  productCard: { padding: '15px', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff' },
+  productImage: { width: '100%', height: 'auto', borderRadius: '8px' },
+  buySection: { marginTop: '10px', textAlign: 'center' },
+  quantityButtons: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  plusMinusButton: { padding: '5px', borderRadius: '4px' },
+  quantityInput: { width: '40px', textAlign: 'center' },
+  buyButton: { padding: '10px', marginTop: '10px' },
+  preOrderButton: { padding: '10px', marginTop: '10px', background: 'orange', border: 'none' },
+  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' },
+  modalContainer: { padding: '20px', background: '#fff', borderRadius: '8px', width: '400px', textAlign: 'center' },
+  modalButtons: { marginTop: '20px', display: 'flex', justifyContent: 'space-between' },
+  cancelButton: { padding: '10px 20px', background: 'red', color: '#fff', border: 'none', borderRadius: '4px' },
+  confirmButton: { padding: '10px 20px', background: 'green', color: '#fff', border: 'none', borderRadius: '4px' },
+  successMessageModal: { color: 'green', fontWeight: 'bold', marginBottom: '10px' },
+  errorMessageModal: { color: 'red', fontWeight: 'bold', marginBottom: '10px' },
 };
-
-export default ProductHome;

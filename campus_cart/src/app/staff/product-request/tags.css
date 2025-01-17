@@ -88,7 +88,7 @@
 
 .requests-table th,
 .requests-table td {
-  text-align: center;
+  text-align: left;
   padding: 10px;
 }
 
@@ -113,19 +113,20 @@
   border-radius: 5px;
   font-size: 14px;
   color: white;
-}
-
-.status-label.completed {
-  background-color: #28a745; /* Green */
+  text-align: center;
 }
 
 .status-label.pending {
-  background-color: #edba0f; /* Orange */
+  background-color: #e8be33; /* Orange */
+}
+
+.status-label.completed {
+  background-color: #66ba69; /* Green */
 }
 
 /* Action Buttons */
 .action-button {
-  background-color: #66ba69; /* Lighter Green */
+  background-color: #57ad5a; /* Lighter Green */
   color: white;
   border: none;
   padding: 5px 15px;
@@ -172,5 +173,8 @@
   opacity: 0.9;
 }
 
-
+.user-email {
+  font-size: 0.8em;
+  color: #666;
+}
 
