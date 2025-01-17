@@ -1,70 +1,190 @@
-/* Tabs */
+/* Container for Preorders Page */
+.preorders-container {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+/* Title and Content Styling */
+.page-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.preorders-content {
+  margin-top: 20px;
+}
+
+.preorders-content h2 {
+  font-size: 1.5rem;
+  color: #444;
+  margin-bottom: 15px;
+}
+
+.preorders-content p {
+  font-size: 1rem;
+  color: #777;
+}
+
+/* Tabs Styling */
+.search-tabs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
 .tabs {
   display: flex;
-  gap: 10px;
+  gap: 15px;
 }
 
 .tab {
   padding: 10px 20px;
-  background-color: transparent;
+  background-color: white;
   border: none;
+  border-bottom: 2px solid #ccc;
   cursor: pointer;
-  font-weight: bold;
-  color: black;
-  border-bottom: 2px solid transparent;
+  font-size: 16px;
+}
+
+.tab:hover,
+.tab:focus {
+  border-color: #30368a;
+  outline: none;
 }
 
 .tab.active {
-  color: black;
-  border-bottom: 5px solid #686db0;
+  border-bottom: 3px solid #30368a; /* Thicker underline for active tab */
+  color: #30368a;
+  background-color: #f3f4f6;
 }
 
-/* Preorders Table */
+/* Search Bar Styling */
+.search-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-input {
+  padding: 5px;
+  font-size: 14px;
+  color: black;
+  border: 1px solid #686db0;
+  border-radius: 5px;
+  width: 200px;
+}
+
+.search-input:focus {
+  border-color: #30368a;
+  outline: none;
+}
+
+/* Status Badge Styles */
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 12px;
+  color: white;
+  font-weight: bold;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+}
+
+.status-badge.yellow {
+  background-color: #fcd34d;
+}
+
+.status-badge.green {
+  background-color: #34d399;
+}
+
+.status-badge.red {
+  background-color: #f87171;
+}
+
+.status-badge.purple {
+  background-color: #a855f7;
+}
+
+.status-badge.blue {
+  background-color: #4d96fc;
+}
+
+.status-badge.gray {
+  background-color: #e5e7eb;
+}
+
+/* Table Responsiveness */
 .preorders-table {
   width: 100%;
-  border-collapse: collapse; /* Ensures rows are neatly joined */
+  border-collapse: collapse;
+  table-layout: auto;
   margin-top: 20px;
+  border-spacing: 0;
 }
 
-.preorders-table th,
-.preorders-table td {
-  padding: 10px;
+.preorders-table th, .preorders-table td {
+  padding: 12px 15px;
   text-align: left;
-  border-bottom: 1px solid #ddd; /* Add separator lines between rows */
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
 }
 
 .preorders-table th {
-  background-color: #f0f0f0; /* Grey background for table header */
-}
-
-.status-badge {
-  padding: 3px 10px;
-  border-radius: 3px;
+  background-color: #f3f4f6;
   font-weight: bold;
 }
 
-.status-badge.pending {
-  background-color: yellow;
+.preorders-table td {
+  border-left: none;
+  border-right: none;
+  vertical-align: middle;
+  min-height: 50px;
 }
 
-.status-badge.accepted {
-  background-color: green;
+/* Action Button Styling */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+.action-button.buy {
+  background-color: #4CAF50; /* Green color */
   color: white;
 }
 
-.status-badge.rejected {
-  background-color: red;
+.action-button.buy:hover {
+  background-color: #45a049;
+}
+
+.action-button.cancel {
+  background-color: #f44336; /* Red color */
   color: white;
 }
 
-/* Ensure the table expands to fit screen size */
+.action-button.cancel:hover {
+  background-color: #e53935;
+}
+
+
+/* For small screens */
 @media (max-width: 768px) {
-  .preorders-table {
-    font-size: 14px; /* Smaller font for mobile */
-  }
-
-  .preorders-table th,
-  .preorders-table td {
-    padding: 8px;
+  .preorders-table th, .preorders-table td {
+    padding: 8px 10px;
   }
 }
