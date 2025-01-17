@@ -119,8 +119,9 @@ const ProductRequestsPage = () => {
   );
 
   const filteredOrderRequests = orderRequests.filter((request) => {
-    const purchasedDate = request.purchasedAt instanceof Date ? request.purchasedAt : request.purchasedAt.toDate(); // Handle Firestore timestamp
-
+    // Check if purchasedAt exists and is a Firestore timestamp
+    const purchasedDate = request.purchasedAt && request.purchasedAt.toDate ? request.purchasedAt.toDate() : new Date(request.purchasedAt);
+  
     return (
       (request.userFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         request.productName.toLowerCase().includes(searchTerm.toLowerCase())) &&
@@ -128,6 +129,7 @@ const ProductRequestsPage = () => {
       (!toDate || new Date(purchasedDate) <= new Date(toDate))
     );
   });
+  
 
   return (
     <div className="product-requests-container">
@@ -192,14 +194,13 @@ const ProductRequestsPage = () => {
                 <td>{formatDate(request.preorderedOn)}</td>
                 <td>
                   <div>{`${request.userFirstName} ${request.userLastName}`}</div>
-                  <div style={{ fontSize: '0.8em', color: '#666' }}>{request.userEmail}</div> {/* Updated email styling */}
+                  <div style={{ fontSize: '0.8em', color: '#666' }}>{request.userEmail}</div> 
                 </td>
-                <td>{request.productName}</td> {/* Product name */}
+                <td>{request.productName}</td>
                 <td>{request.quantity}</td>
-                <td>{getCurrentInventory(request.productName)}</td> {/* Current Inventory from inventory collection */}
+                <td>{getCurrentInventory(request.productName)}</td>
                 <td className="action-cell">
                   <div className="stacked-buttons">
-                    {/* Show "Back in Stock" button only if current inventory > 0 */}
                     {getCurrentInventory(request.productName) > 0 && (
                       <button
                         className="action-button green"
@@ -216,10 +217,10 @@ const ProductRequestsPage = () => {
                     </button>
                   </div>
                 </td>
-
               </tr>
             ))}
           </tbody>
+
         </table>
       ) : (
         <table className="requests-table">
