@@ -7,6 +7,7 @@ import {
   getDocs,
   doc,
   getDoc,
+  updateDoc,
   addDoc,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
@@ -35,7 +36,6 @@ const ProductHome = () => {
   const [userCredits, setUserCredits] = useState(0);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Authentication check state
 
   // Fetch products and user credits on component mount
   useEffect(() => {
@@ -70,8 +70,6 @@ const ProductHome = () => {
         } catch (error) {
           console.error("Error fetching user credits: ", error);
         }
-      } else {
-        setIsAuthenticated(false); // If no user, set to not authenticated
       }
     };
 
@@ -157,14 +155,6 @@ const ProductHome = () => {
           <p style={styles.creditsText}>Credits: {userCredits}</p>
         </div>
       </div>
-
-      {/* Display alert if user is not authenticated */}
-      {!isAuthenticated && (
-        <div style={styles.alert}>
-          <p style={styles.alertText}>You are not authenticated. Please log in to continue.</p>
-        </div>
-      )}
-
       <div style={styles.inventoryContainer}>
         {products.map((product) => (
           <div key={product.id} style={styles.productCard}>
@@ -246,6 +236,7 @@ const ProductHome = () => {
   );
 };
 
+
 const styles = {
   container: {
     display: 'flex',
@@ -286,17 +277,6 @@ const styles = {
     textAlign: 'center',
     marginBottom: '15px',
   },
-  alert: {
-    backgroundColor: '#f44336',
-    color: 'white',
-    padding: '10px',
-    textAlign: 'center',
-    width: '100%',
-    fontWeight: 'bold',
-  },
-  alertText: {
-    fontSize: '16px',
-  },
   inventoryContainer: {
     display: 'flex',
     overflowX: 'auto',
@@ -336,29 +316,31 @@ const styles = {
     marginBottom: '10px',
   },
   plusMinusButton: {
-    padding: '5px 10px',
-    fontSize: '16px',
+    fontSize: '18px',
+    width: '30px',
+    height: '30px',
+    border: 'none',
+    backgroundColor: '#ddd',
     cursor: 'pointer',
+    borderRadius: '4px',
   },
   buyButton: {
     backgroundColor: '#4CAF50',
     color: 'white',
-    padding: '10px 20px',
-    fontSize: '16px',
-    cursor: 'pointer',
     border: 'none',
-    borderRadius: '5px',
-    marginTop: '10px',
+    padding: '10px 20px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    borderRadius: '4px',
   },
   preOrderButton: {
-    backgroundColor: '#FF5722',
+    backgroundColor: '#ff9800',
     color: 'white',
-    padding: '10px 20px',
-    fontSize: '16px',
-    cursor: 'pointer',
     border: 'none',
-    borderRadius: '5px',
-    marginTop: '10px',
+    padding: '10px 20px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    borderRadius: '4px',
   },
   modalOverlay: {
     position: 'fixed',
@@ -376,29 +358,28 @@ const styles = {
     padding: '20px',
     borderRadius: '8px',
     textAlign: 'center',
-    width: '300px',
   },
   modalButtons: {
     display: 'flex',
     justifyContent: 'space-between',
+    marginTop: '20px',
   },
   cancelButton: {
-    backgroundColor: '#FF5722',
+    backgroundColor: '#f44336',
     color: 'white',
     padding: '10px 20px',
-    fontSize: '16px',
-    cursor: 'pointer',
     border: 'none',
-    borderRadius: '5px',
+    cursor: 'pointer',
+    borderRadius: '4px',
+    marginRight: '10px',
   },
   confirmButton: {
     backgroundColor: '#4CAF50',
     color: 'white',
     padding: '10px 20px',
-    fontSize: '16px',
-    cursor: 'pointer',
     border: 'none',
-    borderRadius: '5px',
+    cursor: 'pointer',
+    borderRadius: '4px',
   },
 };
 

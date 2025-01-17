@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation'; // For detecting the current route
+import Link from 'next/link'; // Import Link from next/link
 
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname(); // Get the current path
@@ -67,7 +68,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             { path: '/staff/manage-users', label: 'Manage Users' },
             { path: '/staff/reports', label: 'Reports' },
           ].map((link, index) => (
-            <a
+            <Link
               key={index}
               href={link.path}
               style={navLinkStyle(link.path)}
@@ -79,7 +80,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               }}
             >
               {link.label}
-            </a>
+            </Link>
           ))}
 
           {/* Profile Icon */}
@@ -125,7 +126,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   width: '130px', // Fixed width for the dropdown
                 }}
               >
-                <a
+                <Link
                   href="/staff/change_password"
                   style={{
                     textDecoration: 'none',
@@ -134,8 +135,8 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   }}
                 >
                   Change Password
-                </a>
-                <a
+                </Link>
+                <Link
                   href="../login"
                   style={{
                     textDecoration: 'none',
@@ -144,7 +145,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   }}
                 >
                   Log Out
-                </a>
+                </Link>
               </div>
             )}
           </div>
@@ -158,4 +159,3 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 export default AdminLayout;
-
