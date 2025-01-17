@@ -1,44 +1,15 @@
-/* Container for Preorders Page */
-.preorders-container {
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
-}
-
-/* Title and Content Styling */
-.page-title {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #333;
-}
-
-.preorders-content {
-  margin-top: 20px;
-}
-
-.preorders-content h2 {
-  font-size: 1.5rem;
-  color: #444;
-  margin-bottom: 15px;
-}
-
-.preorders-content p {
-  font-size: 1rem;
-  color: #777;
-}
-
-/* Tabs Styling */
+/* Search and Tabs Container */
 .search-tabs-container {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
 }
 
 .tabs {
   display: flex;
-  gap: 15px;
+  gap: 10px;
 }
 
 .tab {
@@ -53,19 +24,17 @@
 .tab:hover,
 .tab:focus {
   border-color: #30368a;
-  outline: none;
 }
 
 .tab.active {
-  border-bottom: 3px solid #30368a; /* Thicker underline for active tab */
+  border-bottom: 3px solid #30368a;
   color: #30368a;
-  background-color: #f3f4f6;
+  background-color: transparent;
 }
 
-/* Search Bar Styling */
+/* Search Bar */
 .search-container {
   display: flex;
-  justify-content: space-between;
   align-items: center;
 }
 
@@ -78,113 +47,86 @@
   width: 200px;
 }
 
-.search-input:focus {
-  border-color: #30368a;
-  outline: none;
-}
-
-/* Status Badge Styles */
-.status-badge {
+/* Status Labels */
+.status-label {
   padding: 5px 10px;
-  border-radius: 12px;
+  border-radius: 5px;
+  font-size: 14px;
   color: white;
-  font-weight: bold;
-  display: inline-block;
-  min-width: 80px;
-  text-align: center;
 }
 
-.status-badge.yellow {
-  background-color: #fcd34d;
+.status-label.green {
+  background-color: #66ba69; /* Lighter Green */
 }
 
-.status-badge.green {
-  background-color: #34d399;
+.status-label.yellow {
+  background-color: #edba0f; /* Orange */
 }
 
-.status-badge.red {
-  background-color: #f87171;
+.status-label.red {
+  background-color: #e36e65; /* Lighter Red */
 }
 
-.status-badge.purple {
-  background-color: #a855f7;
+.status-label.purple {
+  background-color: #6a71cd; /* Purple */
 }
 
-.status-badge.blue {
-  background-color: #4d96fc;
+.status-label.blue {
+  background-color: #4a90e2; /* Blue */
 }
 
-.status-badge.gray {
-  background-color: #e5e7eb;
+.status-label.grey {
+  background-color: #4a90e2; /* Blue */
 }
 
-/* Table Responsiveness */
-.preorders-table {
+/* Action Buttons */
+.action-button {
+  background-color: #66ba69; /* Lighter Green */
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  border-radius: 5px;
+  cursor: pointer;
   width: 100%;
-  border-collapse: collapse;
-  table-layout: auto;
-  margin-top: 20px;
-  border-spacing: 0;
 }
 
-.preorders-table th, .preorders-table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
+.action-button.red {
+  background-color: #e36e65; /* Lighter Red */
 }
 
-.preorders-table th {
-  background-color: #f3f4f6;
-  font-weight: bold;
+.action-button:hover {
+  opacity: 0.8;
 }
 
-.preorders-table td {
-  border-left: none;
-  border-right: none;
-  vertical-align: middle;
-  min-height: 50px;
-}
-
-/* Action Button Styling */
-.action-buttons {
+/* Stacked Buttons (for Buy/Cancel) */
+.stacked-buttons {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.action-button {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
+/* Table */
+.requests-table {
   width: 100%;
+  border-collapse: collapse;
 }
 
-.action-button.buy {
-  background-color: #4CAF50; /* Green color */
-  color: white;
+.requests-table th,
+.requests-table td {
+  text-align: left;
+  padding: 10px;
 }
 
-.action-button.buy:hover {
-  background-color: #45a049;
+.requests-table th {
+  background-color: #f0f0f0;
 }
 
-.action-button.cancel {
-  background-color: #f44336; /* Red color */
-  color: white;
+.requests-table tr {
+  border-bottom: 1px solid #ddd;
 }
 
-.action-button.cancel:hover {
-  background-color: #e53935;
-}
-
-
-/* For small screens */
-@media (max-width: 768px) {
-  .preorders-table th, .preorders-table td {
-    padding: 8px 10px;
-  }
+.requests-table img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
 }

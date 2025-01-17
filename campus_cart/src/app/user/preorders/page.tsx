@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { firestore } from '../../../lib/firebase';
-import { collection, query, getDocs, where, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, getDocs, getDoc, where, doc, updateDoc } from 'firebase/firestore';
 import { auth } from '../../../lib/firebase';
 import './tags.css'; // Ensure this path is correct
 
@@ -87,7 +87,7 @@ const Preorders = () => {
       case 'unavailable':
         return 'red';
       case 'bought':
-        return 'purple';
+        return 'blue';
       case 'cancelled':
         return 'purple';
       default:
@@ -120,7 +120,7 @@ const Preorders = () => {
   };
 
   return (
-    <div className="preorders-container">
+    <div className="product-requests-container">
       <div className="page-title">Preorders</div>
 
       <div className="search-tabs-container">
@@ -177,7 +177,7 @@ const Preorders = () => {
       <div className="preorders-content">
         <h2>Your Preorders</h2>
 
-        <table className="preorders-table">
+        <table className="requests-table">
           <thead>
             <tr>
               <th>Product Name</th>
@@ -185,7 +185,7 @@ const Preorders = () => {
               <th>Total Amount</th>
               <th>Status</th>
               <th>Preordered On</th>
-              <th>Action</th> {/* Action column header */}
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -195,22 +195,21 @@ const Preorders = () => {
                 <td>{preorder.quantity}</td>
                 <td>{preorder.totalAmount}</td>
                 <td>
-                  <span className={`status-badge ${getStatusColor(preorder.status)}`}>
+                  <span className={`status-label ${getStatusColor(preorder.status)}`}>
                     {preorder.status.charAt(0).toUpperCase() + preorder.status.slice(1)}
                   </span>
                 </td>
-                <td>{new Date(preorder.preorderedOn.seconds * 1000).toLocaleDateString()}</td>
                 <td>
                   {preorder.status === 'available' && (
-                    <div className="action-buttons">
+                    <div className="stacked-buttons">
                       <button
-                        className="action-button buy"
+                        className="action-button"
                         onClick={() => handleBuyItem(preorder.id)}
                       >
                         Buy Item
                       </button>
                       <button
-                        className="action-button cancel"
+                        className="action-button red"
                         onClick={() => handleCancelItem(preorder.id)}
                       >
                         Cancel Item
