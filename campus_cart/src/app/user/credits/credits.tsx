@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { firestore } from '../../../lib/firebase';
-import { collection, addDoc, Timestamp, query, getDocs, doc, getDoc } from 'firebase/firestore'; // Firestore functions
+import { collection, addDoc, Timestamp, query, getDocs, doc, getDoc, where } from 'firebase/firestore'; // Firestore functions
 import { auth } from '../../../lib/firebase'; // Assuming you have Firebase auth initialized
 import './Credits.css';
 
@@ -17,6 +17,7 @@ const Credits = () => {
   const [filter, setFilter] = useState('All'); // State for filtering requests
   const [userDetails, setUserDetails] = useState<any>(null); // State to store the user details
   const [isLoadingUser, setIsLoadingUser] = useState(true); // State to track user details loading
+  const [userCredits, setUserCredits] = useState<number | null>(null); // State to store the user's credits
 
   // Fetch user details from Firestore
   const fetchUserDetails = async () => {
@@ -26,6 +27,7 @@ const Credits = () => {
         const userDoc = await getDoc(doc(firestore, 'users', currentUser.uid));
         if (userDoc.exists()) {
           setUserDetails(userDoc.data());
+          setUserCredits(userDoc.data().credits); // Assuming 'credits' is a field in the user's document
         } else {
           console.error('User details not found in Firestore');
         }
@@ -37,16 +39,28 @@ const Credits = () => {
     }
   };
 
-  // Fetch all voucher requests from Firestore
+  // Fetch all voucher requests for the logged-in user from Firestore
   const fetchUserRequests = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      console.error('No user is logged in');
+      return;
+    }
+
     try {
-      const q = query(collection(firestore, 'voucherRequests')); // Fetch all requests
+      // Query Firestore for requests with the logged-in user's email
+      const q = query(
+        collection(firestore, 'voucherRequests'),
+        where('userEmail', '==', currentUser.email) // Filter by email
+      );
+
       const querySnapshot = await getDocs(q);
       const requestsList: any[] = [];
       querySnapshot.forEach((doc) => {
         requestsList.push({ id: doc.id, ...doc.data() });
       });
-      setUserRequests(requestsList); // Set the fetched data to the state
+
+      setUserRequests(requestsList); // Update the state with filtered requests
     } catch (e) {
       console.error('Error fetching requests: ', e);
     }
@@ -114,7 +128,9 @@ const Credits = () => {
   return (
     <div className="credits-page">
       <div className="credits-header">
-        <p className="credits-line">120 Credits Remaining</p>
+        <p className="credits-line">
+          {userCredits !== null ? `${userCredits} Credits Remaining` : 'Loading Credits...'}
+        </p>
       </div>
       <div className="credits-container">
         {/* Tab Navigation */}
@@ -250,9 +266,9 @@ const Credits = () => {
       {showPopup && (
         <div className="popup">
           <div className="popup-content">
-            <h3>Request Submitted</h3>
-            <p>Please check the status of your request under "View Requests".</p>
-            <button onClick={handleClosePopup} className="close-btn">
+            <h3>Voucher Request Submitted</h3>
+            <p>Please navigate to "View Requests" to view the status of your request.</p>
+            <button className="close-btn" onClick={handleClosePopup}>
               Close
             </button>
           </div>
