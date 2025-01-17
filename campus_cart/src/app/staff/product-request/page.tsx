@@ -7,14 +7,11 @@ import './tags.css';
 
 const db = firestore;
 
-// Utility function to format the date to dd/mm/yyyy
+// Utility function to format the date to yyyy-mm-dd
 const formatDate = (timestamp) => {
   if (!timestamp) return 'N/A';
-  const date = timestamp.toDate(); // Convert Firestore Timestamp to Date
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
+  const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp.toDate(); // If timestamp is a Firestore timestamp, use toDate()
+  return date.toISOString().split('T')[0]; // Returns the date in yyyy-mm-dd format
 };
 
 const ProductRequestsPage = () => {
@@ -65,20 +62,34 @@ const ProductRequestsPage = () => {
 
   // Function to get current inventory quantity based on product name
   const getCurrentInventory = (productName) => {
+    if (!productName) return 0; // Return 0 if productName is undefined or null
     const inventoryItem = inventory.find((item) => item.name.toLowerCase() === productName.toLowerCase());
     return inventoryItem ? inventoryItem.quantity : 0; // Default to 0 if not found
   };
+  
 
-  // Function to handle "Back in Stock" or "Unavailable" button click
+  // Function to handle "Complete", "Back in Stock" or "Unavailable" button click
   const handleActionClick = async (id, action, productName) => {
     const currentInventory = getCurrentInventory(productName);
   
-    if (action === 'backInStock') {
+    if (action === 'complete') {
+      // Update the status to 'completed'
+      const orderRequestRef = doc(db, 'buyRequest', id);
+      await updateDoc(orderRequestRef, {
+        status: 'completed',
+      });
+      // Update the orderRequests state to reflect the change
+      setOrderRequests((prevRequests) =>
+        prevRequests.map((request) =>
+          request.id === id ? { ...request, status: 'completed' } : request
+        )
+      );
+    } else if (action === 'backInStock') {
       if (currentInventory <= 0) {
         setShowModal(true); // Show the custom modal if out of stock
         return;
       }
-      // Update status to 'available'
+      // Update status to 'available' when stock is available
       const preorderRef = doc(db, 'preorders', id);
       await updateDoc(preorderRef, {
         status: 'available',
@@ -103,6 +114,7 @@ const ProductRequestsPage = () => {
       );
     }
   };
+  
 
   // Filter preorders to only show those with status 'pending'
   const filteredPreOrders = preOrders.filter((request) =>
@@ -113,12 +125,16 @@ const ProductRequestsPage = () => {
     (!toDate || new Date(request.date) <= new Date(toDate))
   );
 
-  const filteredOrderRequests = orderRequests.filter((request) =>
-    (request.userFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.productName.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (!fromDate || new Date(request.purchasedAt) >= new Date(fromDate)) &&
-    (!toDate || new Date(request.purchasedAt) <= new Date(toDate))
-  );
+  const filteredOrderRequests = orderRequests.filter((request) => {
+    const purchasedDate = request.purchasedAt instanceof Date ? request.purchasedAt : request.purchasedAt.toDate(); // Handle Firestore timestamp
+  
+    return (
+      (request.userFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.productName.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (!fromDate || new Date(purchasedDate) >= new Date(fromDate)) &&
+      (!toDate || new Date(purchasedDate) <= new Date(toDate))
+    );
+  });
 
   return (
     <div className="product-requests-container">
@@ -133,6 +149,7 @@ const ProductRequestsPage = () => {
           </div>
         </div>
       )}
+
 
       <div className="search-tabs-container">
         <div className="tabs">
@@ -189,35 +206,37 @@ const ProductRequestsPage = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredPreOrders.map((request) => (
-              <tr key={request.id}>
-                <td>{formatDate(request.date)}</td>
-                <td>
-                  <div>{`${request.userFirstName} ${request.userLastName}`}</div>
-                  <div>{request.userEmail}</div>
-                </td>
-                <td>{request.productName}</td> {/* Product name */}
-                <td>{request.quantity}</td>
-                <td>{getCurrentInventory(request.productName)}</td> {/* Current Inventory from inventory collection */}
-                <td className="action-cell">
-                  <div className="stacked-buttons">
-                    <button
-                      className="action-button green"
-                      onClick={() => handleActionClick(request.id, 'backInStock', request.productName)}
-                      disabled={getCurrentInventory(request.productName) <= 0} // Disable if no stock
-                    >
-                      Back in stock
-                    </button>
-                    <button
-                      className="action-button red"
-                      onClick={() => handleActionClick(request.id, 'unavailable', request.productName)}
-                    >
-                      Unavailable
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+          {filteredPreOrders.map((request) => (
+            <tr key={request.id}>
+              <td>{formatDate(request.preorderedOn)}</td>
+              <td>
+                <div>{`${request.userFirstName} ${request.userLastName}`}</div>
+                <div>{request.userEmail}</div>
+              </td>
+              <td>{request.productName}</td> {/* Product name */}
+              <td>{request.quantity}</td>
+              <td>{getCurrentInventory(request.productName)}</td> {/* Current Inventory from inventory collection */}
+              <td className="action-cell">
+                <div className="stacked-buttons">
+                  {/* Show "Back in Stock" button only if current inventory > 0 */}
+                  <button
+                    className="action-button green"
+                    onClick={() => handleActionClick(request.id, 'backInStock', request.productName)}
+                    disabled={getCurrentInventory(request.productName) <= 0} // Disable if no stock
+                  >
+                    Back in stock
+                  </button>
+                  <button
+                    className="action-button red"
+                    onClick={() => handleActionClick(request.id, 'unavailable', request.productName)}
+                  >
+                    Unavailable
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+
           </tbody>
         </table>
       ) : (
@@ -246,17 +265,26 @@ const ProductRequestsPage = () => {
                   <span
                     className={`status-label ${request.status === 'completed' ? 'completed' : 'pending'}`}
                   >
-                    {request.status}
+                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                   </span>
                 </td>
                 <td className="action-cell">
-                  <button className="action-button green" onClick={() => handleActionClick(request.id, 'complete', request.productName)}>
-                    Complete
-                  </button>
+                  <div className="stacked-buttons">
+                    {/* Show "Complete" button only if the status is "pending" */}
+                    {request.status === 'pending' && (
+                      <button
+                        className="action-button green"
+                        onClick={() => handleActionClick(request.id, 'complete')}
+                      >
+                        Complete
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
+
         </table>
       )}
     </div>
