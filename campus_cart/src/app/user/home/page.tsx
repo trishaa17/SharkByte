@@ -1,42 +1,77 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  addDoc,
+} from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { firestore } from "../../../lib/firebase"; 
+import { firestore } from "../../../lib/firebase";
+
+// Define the Product type
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
 
 const auth = getAuth();
 const db = firestore;
 
 const ProductHome = () => {
-  const [products, setProducts] = useState([]);
-  const [quantities, setQuantities] = useState({});  // State to hold quantities for each product
+  const [products, setProducts] = useState<Product[]>([]); // Products state
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isPreOrderModalOpen, setIsPreOrderModalOpen] = useState(false); // New modal for Pre-order
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [finalPrice, setFinalPrice] = useState(0);
-  const [userCredits, setUserCredits] = useState(0); // State to hold user credits
+  const [userCredits, setUserCredits] = useState(0);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(true); // Authentication check state
 
+  // Fetch products and user credits on component mount
   useEffect(() => {
-    // Fetch products from Firestore
     const fetchProducts = async () => {
       try {
-        const productsRef = collection(db, 'inventory'); // Fetch collection (not a document)
+        const productsRef = collection(db, 'inventory');
         const productSnapshot = await getDocs(productsRef);
-        const productList = productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setProducts(productList); // Set products data
+        const productList: Product[] = productSnapshot.docs.map((doc) => {
+          const data = doc.data() as Omit<Product, 'id'>; // Exclude 'id' from Product type
+          return { id: doc.id, ...data }; // Merge Firestore ID with the rest of the data
+        });
+
+        setProducts(productList);
       } catch (error) {
         console.error("Error fetching products: ", error);
       }
     };
 
-    // Fetch user credits from Firestore
     const fetchUserCredits = async () => {
       const user = auth.currentUser;
       if (user) {
-        const userRef = doc(db, 'users', user.uid);
-        const userSnapshot = await getDoc(userRef);
-        const userData = userSnapshot.data();
-        setUserCredits(userData?.credits || 0); // Set user credits
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          const userSnapshot = await getDoc(userRef);
+
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data();
+            setUserCredits(userData?.credits || 0); // Set user credits
+          } else {
+            console.warn('User data does not exist.');
+          }
+        } catch (error) {
+          console.error("Error fetching user credits: ", error);
+        }
+      } else {
+        setIsAuthenticated(false); // If no user, set to not authenticated
       }
     };
 
@@ -44,68 +79,74 @@ const ProductHome = () => {
     fetchUserCredits();
   }, []);
 
-  const handleQuantityChange = (id, increment) => {
+  const handleQuantityChange = (id: string, increment: number) => {
     setQuantities((prevQuantities) => {
-      const newQuantity = prevQuantities[id] + increment;
+      const newQuantity = (prevQuantities[id] || 0) + increment;
       return { ...prevQuantities, [id]: newQuantity >= 0 ? newQuantity : 0 };
     });
   };
 
-  const handleBuyClick = (product) => {
+  const handleBuyClick = (product: Product) => {
     const quantity = quantities[product.id] || 0;
-    const totalPrice = quantity * product.price; // Calculate total price
+    const totalPrice = quantity * product.price;
 
     setFinalPrice(totalPrice);
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
 
-  const handleConfirmPurchase = async () => {
-  const user = auth.currentUser;
-  if (user) {
-    const userRef = doc(db, 'users', user.uid);
-    const userSnapshot = await getDoc(userRef);
-    const userData = userSnapshot.data();
-    const currentCredits = userData?.credits || 0;
+  const handlePreOrderClick = (product: Product) => {
+    const quantity = quantities[product.id] || 0;
+    const totalPrice = quantity * product.price;
 
-    if (currentCredits >= finalPrice) {
-      // Deduct credits from user account
-      await updateDoc(userRef, {
-        credits: currentCredits - finalPrice,
-      });
+    setFinalPrice(totalPrice);
+    setSelectedProduct(product);
+    setIsPreOrderModalOpen(true); // Open pre-order modal
+  };
 
-      // Store purchase details in buyRequest collection
-      const buyRequestRef = collection(db, 'buyRequest');
-      await addDoc(buyRequestRef, {
-        productName: selectedProduct.name,
-        quantity: quantities[selectedProduct.id] || 0,
-        totalAmount: finalPrice,
-        userFirstName: userData?.firstName,
-        userLastName: userData?.lastName,
-        userEmail: userData?.email,
-        purchasedAt: new Date(),
-      });
+  const handleConfirmPreOrder = async () => {
+    const user = auth.currentUser;
+    if (user && selectedProduct) {
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const userSnapshot = await getDoc(userRef);
 
-      // Proceed with buying the product (you can further update product inventory or other actions)
-      console.log('Purchase confirmed:', selectedProduct.name);
-      setUserCredits(currentCredits - finalPrice); // Update the credits state
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data();
+
+          // Store pre-order details in the 'preorders' collection
+          const preOrderRef = collection(db, 'preorders');
+          await addDoc(preOrderRef, {
+            productName: selectedProduct.name,
+            quantity: quantities[selectedProduct.id || ''] || 0,
+            totalAmount: finalPrice,
+            userEmail: userData?.email || 'Unknown',
+            userFirstName: userData?.firstName || 'Unknown',
+            userLastName: userData?.lastName || 'Unknown',
+            preorderedOn: new Date().toISOString(), // Save the timestamp in ISO format
+            status: 'pending',
+          });
+
+          // Set success message and close modal
+          setSuccessMessage('Pre-order placed successfully!');
+          setTimeout(() => {
+            setSuccessMessage('');
+            setIsPreOrderModalOpen(false); // Close modal
+          }, 2000);
+        }
+      } catch (error) {
+        console.error('Error placing pre-order:', error);
+        setErrorMessage('An error occurred while placing the pre-order.');
+        setTimeout(() => setErrorMessage(''), 2000);
+      }
     } else {
-      alert('Insufficient credits');
+      setErrorMessage('No user is logged in.');
+      setTimeout(() => setErrorMessage(''), 2000);
     }
-  }
-  setIsModalOpen(false);
-};
+  };
 
-  const handlePreOrder = async (product) => {
-    const preOrderRef = doc(db, 'preorders', product.id);
-    await updateDoc(preOrderRef, {
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      preOrderedBy: auth.currentUser?.uid,
-      status: 'preordered',
-    });
-    alert('Item has been preordered!');
+  const handleCancelPreOrder = () => {
+    setIsPreOrderModalOpen(false); // Close modal
   };
 
   return (
@@ -116,13 +157,21 @@ const ProductHome = () => {
           <p style={styles.creditsText}>Credits: {userCredits}</p>
         </div>
       </div>
+
+      {/* Display alert if user is not authenticated */}
+      {!isAuthenticated && (
+        <div style={styles.alert}>
+          <p style={styles.alertText}>You are not authenticated. Please log in to continue.</p>
+        </div>
+      )}
+
       <div style={styles.inventoryContainer}>
         {products.map((product) => (
           <div key={product.id} style={styles.productCard}>
             <img src={product.image} alt={product.name} style={styles.productImage} />
             <h3>{product.name}</h3>
             <p>{product.description}</p>
-            <p>Price: {product.price}</p>
+            <p>Credits required: {product.price}</p>
             <p>Qty left: {product.quantity}</p>
 
             <div style={styles.buySection}>
@@ -149,7 +198,7 @@ const ProductHome = () => {
               {product.quantity === 0 ? (
                 <button
                   style={styles.preOrderButton}
-                  onClick={() => handlePreOrder(product)}
+                  onClick={() => handlePreOrderClick(product)}
                 >
                   Pre-order
                 </button>
@@ -166,21 +215,26 @@ const ProductHome = () => {
         ))}
       </div>
 
-      {isModalOpen && (
+      {/* Pre-order confirmation modal */}
+      {isPreOrderModalOpen && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContainer}>
-            <h3>Confirm Purchase</h3>
-            <p>Final price: {finalPrice}</p>
+            {successMessage && <p style={styles.successMessageModal}>{successMessage}</p>}
+            {errorMessage && <p style={styles.errorMessageModal}>{errorMessage}</p>}
+            <h3>Confirm Pre-order</h3>
+            <p>Product: {selectedProduct?.name}</p>
+            <p>Quantity: {quantities[selectedProduct?.id || ''] || 0}</p>
+            <p>Total credits required: {finalPrice}</p>
             <div style={styles.modalButtons}>
               <button
                 style={styles.cancelButton}
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCancelPreOrder}
               >
                 Cancel
               </button>
               <button
                 style={styles.confirmButton}
-                onClick={handleConfirmPurchase}
+                onClick={handleConfirmPreOrder}
               >
                 Confirm
               </button>
@@ -220,6 +274,29 @@ const styles = {
   creditsText: {
     marginRight: '10px',
   },
+  successMessageModal: {
+    color: 'green',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: '15px',
+  },
+  errorMessageModal: {
+    color: 'red',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: '15px',
+  },
+  alert: {
+    backgroundColor: '#f44336',
+    color: 'white',
+    padding: '10px',
+    textAlign: 'center',
+    width: '100%',
+    fontWeight: 'bold',
+  },
+  alertText: {
+    fontSize: '16px',
+  },
   inventoryContainer: {
     display: 'flex',
     overflowX: 'auto',
@@ -249,81 +326,79 @@ const styles = {
     width: '50px',
     textAlign: 'center',
     marginRight: '10px',
+    marginLeft: '10px',
     padding: '5px',
     fontSize: '16px',
   },
   quantityButtons: {
-    display: 'inline-block',
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: '10px',
   },
   plusMinusButton: {
-    padding: '10px',
+    padding: '5px 10px',
     fontSize: '16px',
-    margin: '5px',
     cursor: 'pointer',
-    backgroundColor: '#30368A',
-    color: 'white',
-    border: 'none',
-    borderRadius: '5px',
   },
   buyButton: {
-    padding: '10px 20px',
-    backgroundColor: '#28a745',
+    backgroundColor: '#4CAF50',
     color: 'white',
+    padding: '10px 20px',
+    fontSize: '16px',
+    cursor: 'pointer',
     border: 'none',
     borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '16px',
     marginTop: '10px',
   },
   preOrderButton: {
-    padding: '10px 20px',
-    backgroundColor: '#f39c12',
+    backgroundColor: '#FF5722',
     color: 'white',
+    padding: '10px 20px',
+    fontSize: '16px',
+    cursor: 'pointer',
     border: 'none',
     borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '16px',
     marginTop: '10px',
   },
   modalOverlay: {
     position: 'fixed',
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 1000,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContainer: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
+    backgroundColor: 'white',
     padding: '20px',
-    backgroundColor: '#fff',
     borderRadius: '8px',
-    boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+    textAlign: 'center',
     width: '300px',
   },
   modalButtons: {
     display: 'flex',
     justifyContent: 'space-between',
   },
-  confirmButton: {
-    padding: '10px 20px',
-    backgroundColor: '#28a745',
-    color: 'white',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-  },
   cancelButton: {
-    padding: '10px 20px',
-    backgroundColor: '#e74c3c',
+    backgroundColor: '#FF5722',
     color: 'white',
+    padding: '10px 20px',
+    fontSize: '16px',
+    cursor: 'pointer',
     border: 'none',
     borderRadius: '5px',
+  },
+  confirmButton: {
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    padding: '10px 20px',
+    fontSize: '16px',
     cursor: 'pointer',
+    border: 'none',
+    borderRadius: '5px',
   },
 };
 

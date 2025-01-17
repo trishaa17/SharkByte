@@ -1,47 +1,66 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { firestore } from "../../../lib/firebase"; // Update path if necessary
 import './tags.css';
 
 const PreOrdersPage = () => {
   const [activeTab, setActiveTab] = useState('All orders');
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      name: 'Cup',
-      status: 'Available',
-      image: 'https://via.placeholder.com/150',
-      date: '2025-01-15',
-      quantity: 2,
-    },
-    {
-      id: 2,
-      name: 'Milo packet',
-      status: 'Unavailable',
-      image: 'https://via.placeholder.com/150',
-      date: '2025-01-10',
-      quantity: 3,
-    },
-    {
-      id: 3,
-      name: 'Black pen',
-      status: 'Pending',
-      image: 'https://via.placeholder.com/150',
-      date: '2025-01-12',
-      quantity: 5,
-    },
-  ]);
-
+  const [orders, setOrders] = useState<any[]>([]);
   const [popupMessage, setPopupMessage] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
-  const handleRemoveProduct = (id, name) => {
-    const updatedOrders = orders.filter((order) => order.id !== id);
-    setOrders(updatedOrders);
+  const auth = getAuth();
+  const db = firestore;
 
+  // Fetch orders from Firebase based on the logged-in user
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const user = auth.currentUser;
+      
+      if (!user) {
+        alert('User is not authenticated');
+        return;
+      }
+  
+      // Show an alert with the current user's email
+      alert(`Current User Email: ${user.email}`);
+  
+      try {
+        const ordersRef = collection(db, 'preorders');
+        const q = query(ordersRef, where("userEmail", "==", user.email)); // Filter by userEmail
+        const querySnapshot = await getDocs(q);
+  
+        const fetchedOrders = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.productName,
+            status: data.status,
+            image: data.productImage || 'https://via.placeholder.com/150',
+            date: data.preorderedOn?.toDate()?.toISOString().split('T')[0] || 'N/A', // Format date
+            quantity: data.quantity,
+          };
+        });
+  
+        setOrders(fetchedOrders);
+      } catch (error) {
+        console.error("Error fetching preorders: ", error);
+      }
+    };
+  
+    fetchOrders();
+  }, [auth, db]);
+  
+
+
+  const handleRemoveProduct = (id, name) => {
+    setOrders((prevOrders) => prevOrders.filter((order) => order.id !== id));
     setPopupMessage(`${name} has been removed.`);
     setTimeout(() => setPopupMessage(''), 3000);
   };

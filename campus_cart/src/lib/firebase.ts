@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { User, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
+import { User, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, reauthenticateWithCredential, EmailAuthProvider, updatePassword} from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
 
@@ -12,6 +12,7 @@ const firebaseConfig = {
   appId: "1:277210928267:web:8c5756ea7cc9107995308e",
   measurementId: "G-6M8ZY84579"
 };
+
 const app = initializeApp(firebaseConfig);
 
 // Initialize services
@@ -19,7 +20,6 @@ const auth = getAuth(app);
 const firestore = getFirestore(app);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
-
 
 // Reauthenticate User
 const reauthenticateUser = async (user: User, currentPassword: string) => {
@@ -56,6 +56,8 @@ const deleteUser = async (userId: string) => {
   const userRef = doc(firestore, 'users', userId);
   await deleteDoc(userRef);
 };
+
+
 
 export { 
   auth, 
