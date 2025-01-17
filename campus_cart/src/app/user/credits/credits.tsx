@@ -1,6 +1,9 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { firestore } from '../../../lib/firebase';
-import { collection, addDoc, Timestamp, query, getDocs } from 'firebase/firestore'; // Firestore functions
+import { collection, addDoc, Timestamp, query, getDocs, doc, getDoc } from 'firebase/firestore'; // Firestore functions
+import { auth } from '../../../lib/firebase'; // Assuming you have Firebase auth initialized
 import './Credits.css';
 
 const Credits = () => {
@@ -12,6 +15,27 @@ const Credits = () => {
   const [showPopup, setShowPopup] = useState(false); // State for showing the popup
   const [userRequests, setUserRequests] = useState<any[]>([]); // State to store the user's requests
   const [filter, setFilter] = useState('All'); // State for filtering requests
+  const [userDetails, setUserDetails] = useState<any>(null); // State to store the user details
+  const [isLoadingUser, setIsLoadingUser] = useState(true); // State to track user details loading
+
+  // Fetch user details from Firestore
+  const fetchUserDetails = async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      try {
+        const userDoc = await getDoc(doc(firestore, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          setUserDetails(userDoc.data());
+        } else {
+          console.error('User details not found in Firestore');
+        }
+      } catch (error) {
+        console.error('Error fetching user details: ', error);
+      } finally {
+        setIsLoadingUser(false); // Mark loading as complete
+      }
+    }
+  };
 
   // Fetch all voucher requests from Firestore
   const fetchUserRequests = async () => {
@@ -32,7 +56,15 @@ const Credits = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Add voucher request to Firestore
+    const currentUser = auth.currentUser;
+    if (!currentUser || !userDetails) {
+      console.error('No user is logged in or user details are missing');
+      return; // Exit if no user is logged in
+    }
+
+    const { firstName, lastName, email } = userDetails;
+
+    // Add voucher request to Firestore with user details
     try {
       const docRef = await addDoc(collection(firestore, 'voucherRequests'), {
         voucherType,
@@ -40,6 +72,9 @@ const Credits = () => {
         reason,
         status,
         date: Timestamp.fromDate(new Date()), // Set the current date
+        userFirstName: firstName, // Store first name
+        userLastName: lastName,   // Store last name
+        userEmail: email,         // Store email
       });
       console.log('Voucher request submitted with ID: ', docRef.id);
 
@@ -66,6 +101,8 @@ const Credits = () => {
     if (activeTab === 1) {
       fetchUserRequests(); // Fetch all voucher requests when the "View Requests" tab is active
     }
+
+    fetchUserDetails(); // Fetch user details when the component is mounted
   }, [activeTab]);
 
   // Filter requests based on the selected status
@@ -140,8 +177,12 @@ const Credits = () => {
                   ></textarea>
                 </div>
 
-                <button type="submit" className="submit-btn">
-                  Submit Request
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={isLoadingUser || !userDetails}
+                >
+                  {isLoadingUser ? 'Loading...' : 'Submit Request'}
                 </button>
               </form>
             </div>
@@ -179,7 +220,10 @@ const Credits = () => {
                 <tbody>
                   {filteredRequests.map((request) => (
                     <tr key={request.id}>
-                      <td>{request.voucherType}</td>
+                      <td>
+                        {request.voucherType.charAt(0).toUpperCase() +
+                          request.voucherType.slice(1)}
+                      </td>
                       <td>{request.amount} Credits</td>
                       <td>{request.reason}</td>
                       <td>

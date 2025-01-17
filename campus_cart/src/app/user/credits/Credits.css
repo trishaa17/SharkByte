@@ -19,8 +19,8 @@
 .credits-line {
   font-size: 24px;
   font-weight: bold;
-  color: #006400;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  color: #30368A;
+  /*text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);*/
 }
 
 .credits-container {
@@ -61,7 +61,7 @@
 }
 
 .tab.active {
-  background-color: #006400;
+  background-color: #30368A;
   color: white;
   font-weight: bold;
 }
@@ -80,7 +80,7 @@
 .requests-container h2 {
   font-size: 20px;
   margin-bottom: 15px;
-  color: #006400;
+  color: #30368A;
 }
 
 .form-group {
@@ -111,7 +111,7 @@ textarea {
   display: block;
   width: 100%;
   padding: 12px;
-  background-color: #006400;
+  background-color: #30368A;
   color: white;
   font-size: 16px;
   font-weight: bold;
@@ -122,7 +122,7 @@ textarea {
 }
 
 .submit-btn:hover {
-  background-color: #004c00;
+  background-color: #1C254B;
 }
 
 /* --- View Requests Section --- */
@@ -137,7 +137,7 @@ textarea {
   max-height: 500px; /* Limit height to make it scrollable */
   overflow-y: auto; /* Add vertical scrolling if content overflows */
   margin: 0 auto;
-  padding: 20px 0;
+  padding: 20px 20;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1); /* Optional scroll effect */
 }
 
@@ -166,13 +166,15 @@ textarea {
   margin-top: 20px;
 }
 
+/* Removing vertical borders and adding horizontal ones */
 .requests-table th,
 .requests-table td {
   padding: 10px 15px;
   text-align: left;
-  border-right: 1px solid #ccc; /* Vertical lines only */
+  border-bottom: 1px solid #ccc; /* Add horizontal border (bottom) */
 }
 
+/* Remove the right border from table cells */
 .requests-table th {
   background-color: #f0f0f0;
   font-weight: bold;
@@ -186,8 +188,9 @@ textarea {
   border-bottom: none; /* Remove the border for the last row */
 }
 
+/* Optional: Row hover effect */
 .requests-table tr:hover {
-  background-color: #f1f1f1; /* Optional hover effect for rows */
+  background-color: #f1f1f1;
 }
 
 /* Removing alternating row background color */
@@ -266,7 +269,7 @@ textarea {
 }
 
 .close-btn {
-  background-color: #006400;
+  background-color: #30368A;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -275,7 +278,7 @@ textarea {
 }
 
 .close-btn:hover {
-  background-color: #004c00;
+  background-color: #1C254B;
 }
 
 /* Filter Dropdown */

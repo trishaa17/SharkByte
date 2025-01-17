@@ -1,86 +1,133 @@
 .admin-page {
-    padding: 20px;
-    background-color: #f9f9f9;
-    color: #333;
-  }
-  
-  h1 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .error {
-    color: red;
-    text-align: center;
-    margin-bottom: 10px;
-  }
-  
-  /* Voucher Table Styles */
-  .voucher-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 0 auto;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  
-  .voucher-table th,
-  .voucher-table td {
-    padding: 15px;
-    text-align: left;
-  }
-  
-  .voucher-table th {
-    background-color: #f0f0f0;
-    font-weight: bold;
-    border-bottom: 1px solid #ccc; /* Horizontal line */
-  }
-  
-  .voucher-table td {
-    border-bottom: 1px solid #ccc; /* Horizontal line */
-  }
-  
-  .voucher-table tr:last-child td {
-    border-bottom: none; /* Remove bottom border for last row */
-  }
-  
-  .voucher-table tr:hover {
-    background-color: #f9f9f9; /* Optional row hover effect */
-  }
-  
-  .voucher-table td:nth-child(5) {
-    text-align: center; /* Center the action buttons */
-  }
-  
-  /* Button Styles */
-  .accept-btn {
-    padding: 8px 15px;
-    background-color: #006400;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-right: 5px;
-    transition: background-color 0.3s;
-  }
-  
-  .accept-btn:hover {
-    background-color: #004c00;
-  }
-  
-  .reject-btn {
-    padding: 8px 15px;
-    background-color: #b22222;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .reject-btn:hover {
-    background-color: #8b0000;
-  }
-  
+  padding: 20px;
+  background-color: white;
+  color: #333;
+}
+
+.admin-page h1 {
+  text-align: center;
+  color: black; /* Apply color only within the admin-page */
+  font-weight: bold; /* Bold font */
+  font-size: 32px;
+  margin-bottom: 30px;
+}
+
+.error {
+  color: red;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* Voucher Table Styles */
+.voucher-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 auto;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.voucher-table th,
+.voucher-table td {
+  padding: 15px;
+  text-align: left;
+}
+
+.voucher-table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+  border-bottom: 1px solid #ccc; /* Horizontal line */
+}
+
+.voucher-table td {
+  border-bottom: 1px solid #ccc; /* Horizontal line */
+}
+
+.voucher-table tr:last-child td {
+  border-bottom: none; /* Remove bottom border for last row */
+}
+
+.voucher-table tr:hover {
+  background-color: #f9f9f9; /* Optional row hover effect */
+}
+
+.voucher-table td:nth-child(2) {
+  text-transform: capitalize; /* Capitalize the first letter of voucher type */
+}
+
+.voucher-table td:nth-child(5) {
+  text-align: left; /* Center the action buttons */
+}
+
+/* Status Tag Styles */
+.status-tag {
+  display: inline-block;
+  padding: 5px 10px;
+  font-size: 0.9em;
+  font-weight: bold;
+  color: white;
+  border-radius: 15px;
+  text-align: center;
+  min-width: 80px; /* Optional: Ensure consistent size */
+}
+
+/* Specific Status Colors */
+.status-tag.pending {
+  background-color: #808080; /* Grey for Pending */
+}
+
+.status-tag.accepted {
+  background-color: #006400; /* Green for Accepted */
+}
+
+.status-tag.rejected {
+  background-color: #b22222; /* Red for Rejected */
+}
+
+/* Button Styles */
+.accept-btn {
+  padding: 8px 15px;
+  background-color: #006400;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+  transition: background-color 0.3s;
+}
+
+.accept-btn:hover {
+  background-color: #004c00;
+}
+
+.reject-btn {
+  padding: 8px 15px;
+  background-color: #b22222;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.reject-btn:hover {
+  background-color: #8b0000;
+}
+
+.status-filter {
+  margin-left: 10px;
+  padding: 5px;
+  font-size: 0.9em;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.status-filter:focus {
+  outline: none;
+  border-color: #333;
+}
+
