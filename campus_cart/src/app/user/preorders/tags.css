@@ -26,12 +26,6 @@
   border-color: #30368a;
 }
 
-.tab.active {
-  border-bottom: 3px solid #30368a;
-  color: #30368a;
-  background-color: transparent;
-}
-
 /* Search Bar */
 .search-container {
   display: flex;

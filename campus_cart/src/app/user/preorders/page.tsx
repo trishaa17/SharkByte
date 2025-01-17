@@ -95,6 +95,12 @@ const Preorders = () => {
     }
   };
 
+  // Function to format the date as YYYY-MM-DD
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-CA'); // 'en-CA' gives YYYY-MM-DD format
+  };
+
   // Function to handle the "Buy Item" action
   const handleBuyItem = async (preorderId: string) => {
     try {
@@ -184,7 +190,7 @@ const Preorders = () => {
               <th>Quantity</th>
               <th>Total Amount</th>
               <th>Status</th>
-              <th>Preordered On</th>
+              <th>Date</th> {/* Changed column name */}
               <th>Action</th>
             </tr>
           </thead>
@@ -199,6 +205,7 @@ const Preorders = () => {
                     {preorder.status.charAt(0).toUpperCase() + preorder.status.slice(1)}
                   </span>
                 </td>
+                <td>{formatDate(preorder.preorderedOn)}</td> {/* Display formatted date */}
                 <td>
                   {preorder.status === 'available' && (
                     <div className="stacked-buttons">
