@@ -3,33 +3,29 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",               // Use Next.js built-in dev server
-    "build": "next build",          // For building production code
-    "start": "next start",          // Starts the server after building
-    "lint": "next lint"             // Runs lint checks
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "firebase": "^11.2.0",           // Firebase client library
-    "firebase-admin": "^13.0.2",     // Firebase Admin SDK
-    "mongoose": "^8.9.5",            // MongoDB object modeling tool
-    "next": "13.1.4",                // Fix version mismatch, Next.js latest stable
-    "react": "^18.2.0",              // Align with stable React version
-    "react-dom": "^18.2.0",          // Align with stable React DOM version
-    "react-icons": "^5.4.0"          // React icons library
+    "firebase": "^11.2.0",
+    "firebase-admin": "^13.0.2",
+    "mongoose": "^8.9.5",
+    "next": "15.1.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-icons": "^5.4.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",        // ESLint configuration
-    "@types/node": "^20",            // TypeScript types for Node.js
-    "@types/react": "^18",           // TypeScript types for React
-    "@types/react-dom": "^18",       // TypeScript types for React DOM
-    "eslint": "^8.50.0",             // Align ESLint with Next.js requirements
-    "eslint-config-next": "13.1.4",  // Match Next.js version
-    "postcss": "^8.4.21",            // CSS processor
-    "tailwindcss": "^3.4.1",         // Tailwind CSS
-    "typescript": "^5.2.0"           // TypeScript
-  },
-  "engines": {
-    "node": "16.x",                  // Node.js version compatible with Vercel
-    "npm": "8.x"                     // Recommended npm version
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.4",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
   }
 }
