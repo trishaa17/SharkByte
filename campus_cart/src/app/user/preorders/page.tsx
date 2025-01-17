@@ -124,7 +124,6 @@ const Preorders = () => {
         userLastName: preorderData.userLastName,   // Assuming these fields exist in preorder
         status: 'pending', // Set the initial status to default
         purchasedAt: new Date(), // Save current date as timestamp
-        preorderId: preorderId, // Store the original preorder ID for reference
       });
   
       // Optionally, update the status of the preorder to 'bought' after adding to buyRequest

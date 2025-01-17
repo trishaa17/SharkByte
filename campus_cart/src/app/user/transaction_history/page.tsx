@@ -180,17 +180,16 @@ const TransactionHistoryPage: React.FC = () => {
                   <td>{transaction.quantity}</td>
                   <td>{transaction.creditsUsed}</td>
                   <td>
-                  <span
-                    style={{
-                      backgroundColor: getStatusColor(transaction.status),
-                      color: 'white',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                    }}
-                  >
-                    {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1).toLowerCase()}
-                  </span>
-
+                    <span
+                      style={{
+                        backgroundColor: getStatusColor(transaction.status),
+                        color: 'white',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1).toLowerCase()}
+                    </span>
                   </td>
                 </tr>
               ))

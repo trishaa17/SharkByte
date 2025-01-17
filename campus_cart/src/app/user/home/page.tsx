@@ -137,13 +137,13 @@ const ProductHome = () => {
 
         await addDoc(purchaseRef, {
                 productName: selectedProduct.name,
-                quantity: selectedProduct.quantity,
+                quantity,
                 totalAmount: totalPrice,
                 userEmail: user.email || 'Unknown',
                 userFirstName: firstName, // Assuming these fields exist in preorder
                 userLastName: lastName,   // Assuming these fields exist in preorder
                 status: 'pending', // Set the initial status to default
-                purchasedAt: new Date().toISOString(), // Save current date as timestamp
+                purchasedAt: new Date(), // Save current date as timestamp
               });
           
 
@@ -212,8 +212,8 @@ const ProductHome = () => {
           userEmail: user.email || 'Unknown',
           userFirstName: firstName,
           userLastName: lastName,
-          preOrderDate: new Date().toISOString(),
-          status: 'pre-order',  // Set as pre-order
+          preorderedOn: new Date().toISOString(),
+          status: 'pending',
         });
 
         // Show success message
