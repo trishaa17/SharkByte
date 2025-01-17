@@ -150,17 +150,6 @@ const GeneralReport: React.FC = () => {
     setAverageSpend(totalUsers ? totalSpend / totalUsers : 0);
   }, [buyRequests, preorders]);
 
-  const formatDate = (dateString) => {
-    const match = dateString.match(/(\d{1,2}) (\w+) (\d{4}) at (\d{2}:\d{2}:\d{2}) UTC([+\-]\d{1,2})/);
-    if (match) {
-        const [day, month, year, time] = [match[1], match[2], match[3], match[4]];
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const monthIndex = monthNames.indexOf(month);
-        return `${day}-${monthIndex + 1}-${year}-${time.slice(0, 5)}`;
-    }
-    return "Invalid date";
-};
-
   const renderGeneralReport = () => (
     <div style={styles.summaryContainer}>
       <h2 style={styles.summaryTitle}>General Report</h2>
@@ -259,40 +248,6 @@ const GeneralReport: React.FC = () => {
             ))}
             </tbody>
         </table>
-
-        {/* Buy Requests Section */}
-        <div style={styles.buyRequestsContainer}>
-        <h2 style={styles.buyRequestsTitle}>Buy Requests</h2>
-        <table style={styles.table}>
-            <thead>
-            <tr>
-                <th style={styles.th}>Timestamp</th>
-                <th style={styles.th}>User</th>
-                <th style={styles.th}>Item</th>
-                <th style={styles.th}>Quantity</th>
-                <th style={styles.th}>Total</th>
-                <th style={styles.th}>Status</th>
-            </tr>
-            </thead>
-            <tbody>
-            {buyRequests.map((request) => (
-                <tr key={request.id} style={styles.tableRow}>
-                <td style={styles.td}>{formatDate(request.purchasedAt)}</td>
-
-                <td style={styles.td}>{request.userFirstName} {request.userLastName}</td>
-                <td style={styles.td}>{request.productName}</td>
-                <td style={styles.td}>{request.quantity}</td>
-                <td style={styles.td}>{request.totalAmount.toFixed(2)}</td>
-                <td style={styles.td}>
-                    <span style={styles.statusLabel(request.status)}>
-                    {request.status}
-                    </span>
-                </td>
-                </tr>
-            ))}
-            </tbody>
-        </table>
-        </div>
         </div>
   );
 
