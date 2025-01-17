@@ -1,214 +1,184 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-import { firestore } from "../../../lib/firebase"; // Update path if necessary
+import { firestore } from '../../../lib/firebase';
+import { collection, addDoc, Timestamp, query, getDocs, doc, getDoc, where } from 'firebase/firestore'; // Firestore functions
+import { auth } from '../../../lib/firebase'; // Assuming you have Firebase auth initialized
 import './tags.css';
 
-const PreOrdersPage = () => {
-  const [activeTab, setActiveTab] = useState('All orders');
-  const [orders, setOrders] = useState<any[]>([]);
-  const [popupMessage, setPopupMessage] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+const Preorders = () => {
+  const [activeTab, setActiveTab] = useState(0);
+  const [productName, setProductName] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [status, setStatus] = useState('Pending'); // Default status is Pending
+  const [showPopup, setShowPopup] = useState(false); // State for showing the popup
+  const [userPreorders, setUserPreorders] = useState<any[]>([]); // State to store the user's preorders
+  const [filter, setFilter] = useState('All'); // State for filtering preorders
+  const [userDetails, setUserDetails] = useState<any>(null); // State to store the user details
+  const [isLoadingUser, setIsLoadingUser] = useState(true); // State to track user details loading
 
-  const auth = getAuth();
-  const db = firestore;
-
-  // Fetch orders from Firebase based on the logged-in user
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const user = auth.currentUser;
-      
-      if (!user) {
-        alert('User is not authenticated');
-        return;
-      }
-  
-      // Show an alert with the current user's email
-      alert(`Current User Email: ${user.email}`);
-  
+  // Fetch user details from Firestore
+  const fetchUserDetails = async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
       try {
-        const ordersRef = collection(db, 'preorders');
-        const q = query(ordersRef, where("userEmail", "==", user.email)); // Filter by userEmail
-        const querySnapshot = await getDocs(q);
-  
-        const fetchedOrders = querySnapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            name: data.productName,
-            status: data.status,
-            image: data.productImage || 'https://via.placeholder.com/150',
-            date: data.preorderedOn?.toDate()?.toISOString().split('T')[0] || 'N/A', // Format date
-            quantity: data.quantity,
-          };
-        });
-  
-        setOrders(fetchedOrders);
+        const userDoc = await getDoc(doc(firestore, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          setUserDetails(userDoc.data());
+        } else {
+          console.error('User details not found in Firestore');
+        }
       } catch (error) {
-        console.error("Error fetching preorders: ", error);
+        console.error('Error fetching user details: ', error);
+      } finally {
+        setIsLoadingUser(false); // Mark loading as complete
       }
-    };
-  
-    fetchOrders();
-  }, [auth, db]);
-  
-
-
-  const handleRemoveProduct = (id, name) => {
-    setOrders((prevOrders) => prevOrders.filter((order) => order.id !== id));
-    setPopupMessage(`${name} has been removed.`);
-    setTimeout(() => setPopupMessage(''), 3000);
+    }
   };
 
-  const handleBuyClick = (itemName: string) => {
-    setSelectedItem(itemName);
-    setShowConfirmation(true);
+  // Fetch all preorders for the logged-in user from Firestore
+  const fetchUserPreorders = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      console.error('No user is logged in');
+      return;
+    }
+
+    try {
+      // Query Firestore for preorders with the logged-in user's email
+      const q = query(
+        collection(firestore, 'preorders'),
+        where('userEmail', '==', currentUser.email) // Filter by email
+      );
+
+      const querySnapshot = await getDocs(q);
+      const preordersList: any[] = [];
+      querySnapshot.forEach((doc) => {
+        preordersList.push({ id: doc.id, ...doc.data() });
+      });
+
+      setUserPreorders(preordersList); // Update the state with filtered preorders
+    } catch (e) {
+      console.error('Error fetching preorders: ', e);
+    }
   };
 
-  const handleConfirmPurchase = () => {
-    setShowConfirmation(false);
-    setPopupMessage(`${selectedItem} ordered`);
-    setSelectedItem(null);
-  };
+  useEffect(() => {
+    if (activeTab === 1) {
+      fetchUserPreorders(); // Fetch all preorders when the "View Preorders" tab is active
+    }
 
-  const handleCancelPurchase = () => {
-    setShowConfirmation(false);
-    setSelectedItem(null);
-  };
+    fetchUserDetails(); // Fetch user details when the component is mounted
+  }, [activeTab]);
 
-  const handleClosePopup = () => {
-    setPopupMessage('');
-  };
-
-  const filteredOrders = orders.filter((order) => {
-    const orderDate = new Date(order.date);
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
-
-    const isInDateRange =
-      (!start || orderDate >= start) && (!end || orderDate <= end);
-
-    return (
-      (activeTab === 'All orders' || order.status === activeTab) &&
-      isInDateRange
-    );
-  });
+  // Filter preorders based on the selected status
+  const filteredPreorders =
+    filter === 'All'
+      ? userPreorders
+      : userPreorders.filter((preorder) => preorder.status === filter);
 
   return (
-    <div className="preorders-container">
-      <h1 className="page-title">Pre-order History</h1>
-
-      {/* Popup Message for Remove Product */}
-      {popupMessage && (
-        <div className="popup-message">{popupMessage}</div>
-      )}
-
-      {/* Tabs and Date Filter */}
-      <div className="tabs-and-filter">
+    <div className="preorders-page">
+      <div className="preorders-header">
+        <p className="preorders-line">
+          {userDetails ? `${userDetails.firstName} ${userDetails.lastName}` : 'Loading User...'}
+        </p>
+      </div>
+      <div className="preorders-container">
+        {/* Tab Navigation */}
         <div className="tabs">
-          {['All orders', 'Available', 'Pending', 'Unavailable'].map((tab) => (
+          
+          <button
+            className={`tab ${activeTab === 1 ? 'active' : ''}`}
+            onClick={() => setActiveTab(1)}
+          >
+            View Preorders
+          </button>
+        </div>
+
+        {/* Filter by Status Tabs */}
+        {activeTab === 1 && (
+          <div className="status-tabs">
             <button
-              key={tab}
-              className={`tab ${activeTab === tab ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab)}
+              className={`tab ${filter === 'All' ? 'active' : ''}`}
+              onClick={() => setFilter('All')}
             >
-              {tab}
+              All
             </button>
-          ))}
-        </div>
-        <div className="date-filter">
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-          <span>to</span>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* White Background for Content */}
-      <div className="white-box">
-        {filteredOrders.length === 0 ? (
-          <p>No pre-orders found</p>
-        ) : (
-          <table className="preorders-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Product</th>
-                <th>Quantity Pre-ordered</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order.id}>
-                  <td>{order.date}</td>
-                  <td>
-                    <div className="product-info">
-                      <img
-                        src={order.image}
-                        alt={order.name}
-                        className="product-image"
-                      />
-                      <span>{order.name}</span>
-                    </div>
-                  </td>
-                  <td>{order.quantity}</td>
-                  <td>
-                    <span className={`tag ${order.status.toLowerCase()}`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td>
-                    {order.status === 'Available' && (
-                      <div className="action-buttons">
-                        <button
-                          className="buy-button"
-                          onClick={() => handleBuyClick(order.name)}
-                        >
-                          Buy product
-                        </button>
-                        <button
-                          className="remove-button"
-                          onClick={() => handleRemoveProduct(order.id, order.name)}
-                        >
-                          Remove Product
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            <button
+              className={`tab ${filter === 'Pending' ? 'active' : ''}`}
+              onClick={() => setFilter('Pending')}
+            >
+              Pending
+            </button>
+            <button
+              className={`tab ${filter === 'Accepted' ? 'active' : ''}`}
+              onClick={() => setFilter('Accepted')}
+            >
+              Accepted
+            </button>
+            <button
+              className={`tab ${filter === 'Rejected' ? 'active' : ''}`}
+              onClick={() => setFilter('Rejected')}
+            >
+              Rejected
+            </button>
+          </div>
         )}
+
+        <div className="preorders-content">
+          {/* View Preorders Section */}
+          {activeTab === 1 && (
+            <div className="preorders-container">
+              <h2>Your Preorders</h2>
+
+              <table className="preorders-table">
+                <thead>
+                  <tr>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Preordered On</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPreorders.map((preorder) => (
+                    <tr key={preorder.id}>
+                      <td>{preorder.productName}</td>
+                      <td>{preorder.quantity}</td>
+                      <td>{preorder.totalAmount}</td>
+                      <td>
+                        <span
+                          className={`status-badge ${preorder.status.toLowerCase()}`}
+                        >
+                          {preorder.status}
+                        </span>
+                      </td>
+                      <td>{new Date(preorder.preorderedOn.seconds * 1000).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {filteredPreorders.length === 0 && (
+                <p>No preorders found for the selected filter.</p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Confirmation Popup for Buy Product */}
-      {showConfirmation && (
-        <div className="popup-overlay">
-          <div className="popup">
-            <p>Do you confirm you want to purchase {selectedItem}?</p>
-            <div className="popup-buttons">
-              <button className="yes-button" onClick={handleConfirmPurchase}>
-                Yes
-              </button>
-              <button className="no-button" onClick={handleCancelPurchase}>
-                No
-              </button>
-            </div>
+      {/* Success Popup */}
+      {showPopup && (
+        <div className="popup">
+          <div className="popup-content">
+            <h3>Preorder Submitted</h3>
+            <p>Your preorder has been successfully submitted. Please check "View Preorders" to track its status.</p>
+            <button className="close-btn" onClick={() => setShowPopup(false)}>
+              Close
+            </button>
           </div>
         </div>
       )}
@@ -216,4 +186,4 @@ const PreOrdersPage = () => {
   );
 };
 
-export default PreOrdersPage;
+export default Preorders;
