@@ -152,7 +152,7 @@ const InventoryManagement: React.FC = () => {
 
       {/* Main Content */}
       <div style={styles.content}>
-        <div style={{ padding: '20px' }}>
+        <div>
           <h1 style={styles.title}>Inventory Management</h1>
           <button onClick={() => setIsSidebarOpen(true)} style={styles.openSidebarButton}>
             View Audit Logs
@@ -352,13 +352,12 @@ const styles = {
   },
   content: {
     flex: 1,
-    padding: '20px',
     width: '100%',
   },
   title: {
-    fontSize: '2.5rem',
+    fontSize: '2 rem',
     fontWeight: 'bold',
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: '20px',
   },
   openSidebarButton: {
