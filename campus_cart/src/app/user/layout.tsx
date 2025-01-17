@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link'; // Import Link
 
 const ResidentLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
@@ -65,19 +66,9 @@ const ResidentLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
             { path: '/user/preorders', label: 'Pre Orders' },
             { path: '/user/transaction_history', label: 'Transaction History' },
           ].map((link, index) => (
-            <a
-              key={index}
-              href={link.path}
-              style={navLinkStyle(link.path)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = pathname === link.path ? '#1C254B' : '#1C254B';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = pathname === link.path ? '#1C254B' : '#30368A';
-              }}
-            >
+            <Link key={index} href={link.path} style={navLinkStyle(link.path)}>
               {link.label}
-            </a>
+            </Link>
           ))}
 
           {/* Profile Icon */}
@@ -92,7 +83,6 @@ const ResidentLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
               borderRadius: '50%',
               backgroundColor: 'transparent',
               cursor: 'pointer',
-              
             }}
             onClick={() => setDropdownVisible((prev) => !prev)}
           >
@@ -124,26 +114,12 @@ const ResidentLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
                   width: '130px',
                 }}
               >
-                <a
-                  href="../staff/change_password"
-                  style={{
-                    textDecoration: 'none',
-                    color: 'white',
-                    padding: '5px 0',
-                  }}
-                >
+                <Link href="../staff/change_password">
                   Change Password
-                </a>
-                <a
-                  href="/login"
-                  style={{
-                    textDecoration: 'none',
-                    color: 'white',
-                    padding: '5px 0',
-                  }}
-                >
+                </Link>
+                <Link href="/login">
                   Log Out
-                </a>
+                </Link>
               </div>
             )}
           </div>

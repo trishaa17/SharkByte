@@ -18,3 +18,53 @@
   color: black;
   border-bottom: 5px solid #686db0;
 }
+
+/* Preorders Table */
+.preorders-table {
+  width: 100%;
+  border-collapse: collapse; /* Ensures rows are neatly joined */
+  margin-top: 20px;
+}
+
+.preorders-table th,
+.preorders-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd; /* Add separator lines between rows */
+}
+
+.preorders-table th {
+  background-color: #f0f0f0; /* Grey background for table header */
+}
+
+.status-badge {
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.status-badge.pending {
+  background-color: yellow;
+}
+
+.status-badge.accepted {
+  background-color: green;
+  color: white;
+}
+
+.status-badge.rejected {
+  background-color: red;
+  color: white;
+}
+
+/* Ensure the table expands to fit screen size */
+@media (max-width: 768px) {
+  .preorders-table {
+    font-size: 14px; /* Smaller font for mobile */
+  }
+
+  .preorders-table th,
+  .preorders-table td {
+    padding: 8px;
+  }
+}
