@@ -22,8 +22,7 @@ const ProductRequestsPage = () => {
   const [activeTab, setActiveTab] = useState('pre-orders');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const [showModal, setShowModal] = useState(false); // State to manage modal visibility
-
+  
   useEffect(() => {
     const fetchPreOrders = async () => {
       const preOrdersRef = collection(db, 'preorders');
@@ -66,12 +65,11 @@ const ProductRequestsPage = () => {
     const inventoryItem = inventory.find((item) => item.name.toLowerCase() === productName.toLowerCase());
     return inventoryItem ? inventoryItem.quantity : 0; // Default to 0 if not found
   };
-  
 
   // Function to handle "Complete", "Back in Stock" or "Unavailable" button click
   const handleActionClick = async (id, action, productName) => {
     const currentInventory = getCurrentInventory(productName);
-  
+
     if (action === 'complete') {
       // Update the status to 'completed'
       const orderRequestRef = doc(db, 'buyRequest', id);
@@ -85,10 +83,6 @@ const ProductRequestsPage = () => {
         )
       );
     } else if (action === 'backInStock') {
-      if (currentInventory <= 0) {
-        setShowModal(true); // Show the custom modal if out of stock
-        return;
-      }
       // Update status to 'available' when stock is available
       const preorderRef = doc(db, 'preorders', id);
       await updateDoc(preorderRef, {
@@ -114,7 +108,6 @@ const ProductRequestsPage = () => {
       );
     }
   };
-  
 
   // Filter preorders to only show those with status 'pending'
   const filteredPreOrders = preOrders.filter((request) =>
@@ -127,7 +120,7 @@ const ProductRequestsPage = () => {
 
   const filteredOrderRequests = orderRequests.filter((request) => {
     const purchasedDate = request.purchasedAt instanceof Date ? request.purchasedAt : request.purchasedAt.toDate(); // Handle Firestore timestamp
-  
+
     return (
       (request.userFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         request.productName.toLowerCase().includes(searchTerm.toLowerCase())) &&
@@ -139,18 +132,6 @@ const ProductRequestsPage = () => {
   return (
     <div className="product-requests-container">
       <h1 className="page-title">Product Requests</h1>
-
-      {/* Modal for out of stock */}
-      {showModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={() => setShowModal(false)}>&times;</span>
-            <p>There is currently no stock available.</p>
-          </div>
-        </div>
-      )}
-
-
       <div className="search-tabs-container">
         <div className="tabs">
           <button
@@ -201,42 +182,43 @@ const ProductRequestsPage = () => {
               <th>User</th>
               <th>Item</th>
               <th>Quantity Ordered</th>
-              <th>Current Inventory</th> {/* Updated column name */}
+              <th>Current Inventory</th>
               <th className="action-header">Action</th>
             </tr>
           </thead>
           <tbody>
-          {filteredPreOrders.map((request) => (
-            <tr key={request.id}>
-              <td>{formatDate(request.preorderedOn)}</td>
-              <td>
-                <div>{`${request.userFirstName} ${request.userLastName}`}</div>
-                <div>{request.userEmail}</div>
-              </td>
-              <td>{request.productName}</td> {/* Product name */}
-              <td>{request.quantity}</td>
-              <td>{getCurrentInventory(request.productName)}</td> {/* Current Inventory from inventory collection */}
-              <td className="action-cell">
-                <div className="stacked-buttons">
-                  {/* Show "Back in Stock" button only if current inventory > 0 */}
-                  <button
-                    className="action-button green"
-                    onClick={() => handleActionClick(request.id, 'backInStock', request.productName)}
-                    disabled={getCurrentInventory(request.productName) <= 0} // Disable if no stock
-                  >
-                    Back in stock
-                  </button>
-                  <button
-                    className="action-button red"
-                    onClick={() => handleActionClick(request.id, 'unavailable', request.productName)}
-                  >
-                    Unavailable
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
+            {filteredPreOrders.map((request) => (
+              <tr key={request.id}>
+                <td>{formatDate(request.preorderedOn)}</td>
+                <td>
+                  <div>{`${request.userFirstName} ${request.userLastName}`}</div>
+                  <div style={{ fontSize: '0.8em', color: '#666' }}>{request.userEmail}</div> {/* Updated email styling */}
+                </td>
+                <td>{request.productName}</td> {/* Product name */}
+                <td>{request.quantity}</td>
+                <td>{getCurrentInventory(request.productName)}</td> {/* Current Inventory from inventory collection */}
+                <td className="action-cell">
+                  <div className="stacked-buttons">
+                    {/* Show "Back in Stock" button only if current inventory > 0 */}
+                    {getCurrentInventory(request.productName) > 0 && (
+                      <button
+                        className="action-button green"
+                        onClick={() => handleActionClick(request.id, 'backInStock', request.productName)}
+                      >
+                        Back in stock
+                      </button>
+                    )}
+                    <button
+                      className="action-button red"
+                      onClick={() => handleActionClick(request.id, 'unavailable', request.productName)}
+                    >
+                      Unavailable
+                    </button>
+                  </div>
+                </td>
 
+              </tr>
+            ))}
           </tbody>
         </table>
       ) : (
@@ -257,34 +239,30 @@ const ProductRequestsPage = () => {
                 <td>{formatDate(request.purchasedAt)}</td>
                 <td>
                   <div>{`${request.userFirstName} ${request.userLastName}`}</div>
-                  <div>{request.userEmail}</div>
+                  <div style={{ fontSize: '0.8em', color: '#666' }}>{request.userEmail}</div> {/* Updated email styling */}
                 </td>
-                <td>{request.productName}</td> {/* Product name */}
+                <td>{request.productName}</td>
                 <td>{request.quantity}</td>
                 <td>
-                  <span
-                    className={`status-label ${request.status === 'completed' ? 'completed' : 'pending'}`}
-                  >
-                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                  </span>
-                </td>
-                <td className="action-cell">
-                  <div className="stacked-buttons">
-                    {/* Show "Complete" button only if the status is "pending" */}
-                    {request.status === 'pending' && (
-                      <button
-                        className="action-button green"
-                        onClick={() => handleActionClick(request.id, 'complete')}
-                      >
-                        Complete
-                      </button>
-                    )}
+                  <div className={`status-label ${request.status}`}>
+                    {request.status === 'pending' ? 'Pending' : 'Completed'}
                   </div>
                 </td>
+                <td className="action-cell">
+                  {/* Show "Complete" button only if status is "pending" */}
+                  {request.status === 'pending' && (
+                    <button
+                      className="action-button green"
+                      onClick={() => handleActionClick(request.id, 'complete', request.productName)}
+                    >
+                      Complete
+                    </button>
+                  )}
+                </td>
+
               </tr>
             ))}
           </tbody>
-
         </table>
       )}
     </div>
