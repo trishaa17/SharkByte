@@ -5,7 +5,6 @@ import { auth, signInWithEmailAndPassword } from '../../lib/firebase'; // Adjust
 import { doc, getDoc } from 'firebase/firestore'; // Firestore methods
 import { db } from '../../lib/firebase'; // Firestore instance
 import { useRouter } from 'next/navigation';
-
 export default function HomePage() {
   const [userType, setUserType] = useState<'resident' | 'staff' | null>(null);
   const [email, setEmail] = useState('');
@@ -61,21 +60,34 @@ export default function HomePage() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Left side (green background) */}
+      {/* Left side with background image and transparency */}
       <div
         style={{
           flex: 1,
-          backgroundColor: '#30368A',
+          backgroundImage: 'url(/Home.jpeg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           color: 'white',
+          position: 'relative',
         }}
       >
-        <h2>Welcome to Campus Cart</h2>
+        {/* Overlay with transparency */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',  // Adjust the transparency here
+          }}
+        />
       </div>
 
-      {/* Right side (white background and login form) */}
+      {/* Right side with login form */}
       <div
         style={{
           flex: 1,
@@ -88,7 +100,7 @@ export default function HomePage() {
       >
         <div style={{ width: '100%', maxWidth: '400px' }}>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <h1 style={{ fontWeight: 'bold', fontSize: '32px', color: 'black' }}>Campus Cart</h1>
+            <h1 style={{ fontWeight: 'bold', fontSize: '30px', color: 'black' }}>Welcome to Campus Cart</h1>
           </div>
 
           {/* Error message */}
