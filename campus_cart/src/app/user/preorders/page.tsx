@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { firestore } from '../../../lib/firebase';
-import { collection, query, getDocs, getDoc, where, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, getDocs, getDoc, where, doc, updateDoc , addDoc} from 'firebase/firestore';
 import { auth } from '../../../lib/firebase';
 import './tags.css'; // Ensure this path is correct
 
@@ -105,13 +105,39 @@ const Preorders = () => {
   const handleBuyItem = async (preorderId: string) => {
     try {
       const preorderRef = doc(firestore, 'preorders', preorderId);
+      const preorderDoc = await getDoc(preorderRef);
+  
+      if (!preorderDoc.exists()) {
+        console.error('Preorder not found');
+        return;
+      }
+  
+      const preorderData = preorderDoc.data();
+  
+      // Add to buyRequest collection with the required fields
+      await addDoc(collection(firestore, 'buyRequest'), {
+        productName: preorderData.productName,
+        quantity: preorderData.quantity,
+        totalAmount: preorderData.totalAmount,
+        userEmail: preorderData.userEmail,
+        userFirstName: preorderData.userFirstName, // Assuming these fields exist in preorder
+        userLastName: preorderData.userLastName,   // Assuming these fields exist in preorder
+        status: 'pending', // Set the initial status to default
+        purchasedAt: new Date(), // Save current date as timestamp
+        preorderId: preorderId, // Store the original preorder ID for reference
+      });
+  
+      // Optionally, update the status of the preorder to 'bought' after adding to buyRequest
       await updateDoc(preorderRef, { status: 'bought' });
+  
       // Refresh preorders after updating the status
       fetchUserPreorders();
     } catch (error) {
-      console.error('Error updating status to bought: ', error);
+      console.error('Error adding to buyRequest: ', error);
     }
   };
+  
+
 
   // Function to handle the "Cancel Item" action
   const handleCancelItem = async (preorderId: string) => {
